@@ -1,34 +1,34 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "lexer.h"
 
 int main(int argc, char const *argv[])
 {
-    if (argc != 2)
-        return 0;
+    FILE *file = fopen("table.csv", "rb");
 
-    char const *file_name = argv[1];
+    read_lexer_table(file);
 
-    FILE *file = fopen(file_name, "rb");
+    // if (argc != 2)
+    //     return 0;
 
-    if (file == NULL)
-        return 0;
+    // char const *file_name = argv[1];
 
-    file_buffer *buffer = allocate_buffer(file);
+    // FILE *file = fopen(file_name, "rb");
 
-    lexem_buffer *lexem = allocate_lexem_buffer();
+    // if (file == NULL)
+    //     return 0;
 
-    while (get_next_lexem(buffer, lexem) == 1)
-        printf("Type:%s\tLexem:%s\tLine:%d\n", get_type_label(lexem->token), lexem->data, lexem->line);
+    // file_buffer *buffer = allocate_buffer(file);
 
-    deallocate_buffer(buffer);
+    // printf("%d, %s\n", f.token, f.data);
 
-    deallocate_lexem_buffer(lexem);
+    // deallocate_buffer(buffer);
 
-    fclose(file);
+    // fclose(file);
 
-    printf("done\n");
+    // printf("done\n");
 
     return 0;
 }

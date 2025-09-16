@@ -1,62 +1,35 @@
 #ifndef LEXER_H
 #define LEXER_H
 
+#include <stdbool.h>
+#include <ctype.h>
 #include <file_buffer.h>
 
-typedef enum lexer
+typedef struct
 {
-    ID,
-    WHILE,
-    VOLATILE,
-    VOID,
-    UNSIGNED,
-    SWITCH,
-    STRUCT,
-    STATIC,
-    SIZEOF,
-    SIGNED,
-    SHORT,
-    RETURN,
-    REGISTER,
-    LONG,
-    INT,
-    IF,
-    GOTO,
-    FOR,
-    FLOAT,
-    EXTERN,
-    ENUM,
-    ELSE,
-    DOUBLE,
-    DO,
-    DEFAULT,
-    CONTINUE,
-    CONST,
-    CHAR,
-    CASE,
-    BREAK,
-    AUTO,
-    DOUBLE_EQUAL,
-    EQUAL,
-    LESS_THAN,
-    INCLUDE
-} lexer;
+    int next_state;
+    bool go_forward;
+} lexer_decision;
 
-typedef struct lexem_buffer
+typedef struct
 {
-    int line;
-    int index;
+    char **characters;
+    int **states;
+    lexer_decision ***data;
+} lexer_table;
+
+typedef struct
+{
+    unsigned int token;
     char *data;
-    lexer token;
-    char *const token_name;
-} lexem_buffer;
+} lexem;
 
-lexem_buffer *allocate_lexem_buffer();
+lexem *allocate_lexem_buffer();
 
-void deallocate_lexem_buffer(lexem_buffer *kill);
+void deallocate_lexem_buffer(lexem *kill);
 
-int get_next_lexem(file_buffer *buffer, lexem_buffer *mylexem);
+lexem get_next_lexem(file_buffer *buffer, lexer_table *table);
 
-char *get_type_label(int type);
+lexer_table *read_lexer_table(FILE *file);
 
 #endif

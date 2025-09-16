@@ -29,7 +29,7 @@ $(DIST_DIR)/%.o: $(SRC_DIR)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 run: $(TARGET)
-	./$(TARGET) input/lexemas.txt
+	./$(TARGET) input/tiny.txt
 
 clean:
 	rm -f $(TARGET) $(DIST_DIR)

@@ -1,180 +1,136 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <ctype.h>
 #include "lexer.h"
+#include <string.h>
 
-char *const SPECIAL_WORDS[] = {"while", "volatile", "void", "unsigned", "switch", "struct", "static", "sizeof", "signed", "short", "return", "register", "long", "int", "if", "goto", "for", "float", "extern", "enum", "else", "double", "do", "default", "continue", "const", "char", "case", "break", "auto", "less_than", "include", NULL};
+#define COLUMN_SIZE sizeof(char) * 20
+#define LINE_SIZE 4096 * 4
 
-typedef enum lexer_state
+lexem *allocate_lexem_buffer(void)
 {
-    START,
-    READING,
-    FINISH
-} lexer_state;
-
-const char *const STATE_LABEL[] = {"START", "READING", "FINISH"};
-
-lexem_buffer *allocate_lexem_buffer()
-{
-    lexem_buffer *new_lexem = (lexem_buffer *)malloc(sizeof(lexem_buffer));
-
-    new_lexem->data = (char *)malloc(sizeof(char) * 65);
-    new_lexem->line = 0;
-    new_lexem->index = 0;
-
-    return new_lexem;
+    return (lexem *)malloc(sizeof(lexem));
 }
 
-void deallocate_lexem_buffer(lexem_buffer *kill)
+void deallocate_lexem_buffer(lexem *kill)
 {
-    free(kill->data);
+    if (kill == NULL)
+        return;
+
+    if (kill->data != NULL)
+        free(kill->data);
+
     free(kill);
 }
 
-int is_special(char *string)
+lexem get_next_lexem(file_buffer *buffer, lexer_table *table)
 {
-    int index = 0;
+    lexem a = {
+        data : "ABC",
+        token : 10
+    };
 
-    while (SPECIAL_WORDS[index] != NULL)
-        if (strcmp(SPECIAL_WORDS[index++], string) == 0)
-            return index - 1;
-
-    return -1;
+    return a;
 }
 
-int is_numeric(char character)
+char *parse_string(char *string)
 {
-    return isalnum(character);
-}
+    int len = strlen(string);
 
-int is_common_character(char character)
-{
-    return isalpha(character) || is_numeric(character) || character == '.' || character == '_' || character == '#';
-}
+    int string_index = 0;
+    bool finished_elimination = false;
 
-void write_character(lexem_buffer *lexem, char character)
-{
-    sprintf(&lexem->data[lexem->index++], "%c", character);
-}
-
-int start_reading(lexem_buffer *lexem, char character)
-{
-    if (character == '\0')
-        return 0;
-
-    if (is_common_character(character) == 0)
-        return -1;
-
-    write_character(lexem, character);
-
-    return 1;
-}
-
-int read_character(lexem_buffer *lexem, char character)
-{
-    if (is_common_character(character) == 0)
-    {
-        write_character(lexem, '\0');
-        return 0;
-    }
-
-    write_character(lexem, character);
-    return 1;
-}
-
-int run_lexer_machine_state(file_buffer *buffer, lexem_buffer *lexem, lexer_state *state)
-{
-    int result, type;
-
-    char character = get_next_char(buffer);
-
-    if (*state == START)
-    {
-        result = start_reading(lexem, character);
-
-        if (result == 0)
-        {
-            go_back(buffer);
-            return 0;
-        }
-
-        if (result == 1)
-            *state = READING;
-    }
-
-    else if (*state == READING)
-    {
-
-        result = read_character(lexem, character);
-
-        if (result == 0)
-        {
-            go_back(buffer);
-            *state = FINISH;
-        }
-    }
-
-    else if (*state == FINISH)
-    {
-        type = is_special(lexem->data);
-
-        if (type == -1)
-            lexem->token = -1;
+    for (int index = len - 1; index >= 0; index++)
+        if (string[index] == '\n')
+            string[index] = '\0';
+        else if (string[index] == ' ')
+            string[index] = '\0';
         else
-            lexem->token = type;
+            break;
 
-        lexem->line = buffer->line;
+    for (int index = 0; index < len; index++)
+        if (string[index] == '\0')
+            return string;
 
-        go_back(buffer);
+        else if (string[index] != ' ' || finished_elimination == true)
+        {
+            string[string_index++] = string[index];
 
-        return 1;
-    }
+            if (index != string_index - 1)
+                string[index] = '\0';
 
-    return -1;
+            finished_elimination = true;
+        }
+
+    return string;
 }
 
-void reset_lexem_buffer(lexem_buffer *lexem)
+lexer_decision *create_null_decision()
 {
-    lexem->index = 0;
-    memset(lexem->data, '\0', 65);
+    lexer_decision *decision = (lexer_decision *)malloc(sizeof(lexer_decision));
+
+    decision->go_forward = false;
+    decision->next_state = -1;
+
+    return decision;
 }
 
-int find_lexem(file_buffer *buffer, lexem_buffer *lexem)
+lexer_decision *parse_decision(char *raw_decision)
 {
-    int result;
-    lexer_state state = START;
+    if (strcmp(raw_decision, "NULL") == 0)
+        return create_null_decision();
 
-    while (1)
+    lexer_decision *decision = (lexer_decision *)malloc(sizeof(lexer_decision));
+
+    char *next_state = strtok(raw_decision, " ");
+    char *go_forward = strtok(NULL, " ");
+
+    decision->next_state = atoi(next_state);
+    decision->go_forward = (strcmp(go_forward, "V") == 0);
+
+    return decision;
+}
+
+lexer_table *
+read_lexer_table(FILE *file)
+{
+    char data[LINE_SIZE];
+
+    fgets(data, LINE_SIZE - 1, file);
+
+    int count = 1;
+
+    for (int i = 0; i < strlen(data); i++)
+        if (data[i] == ',')
+            count++;
+
+    char *token2 = strtok(data, ",");
+
+    char **columns = (char **)malloc(COLUMN_SIZE * count);
+
+    columns[0] = token2;
+
+    int i = 0;
+
+    while (columns[i] != NULL)
+        columns[++i] = strtok(NULL, ",");
+
+    char **helper = (char **)malloc(COLUMN_SIZE * count);
+
+    while (fgets(data, LINE_SIZE, file))
     {
-        result = run_lexer_machine_state(buffer, lexem, &state);
+        char *token = strtok(data, ",");
+        i = 0;
 
-        if (result == 0)
-            return 0;
+        while (token != NULL)
+        {
+            helper[i++] = parse_string(token);
+            token = strtok(NULL, ",");
+        }
 
-        if (result == 1)
-            return 1;
+        for (int i = 0; i < count; i++)
+        {
+            lexer_decision *decision = parse_decision(helper[i]);
+            printf("%d %d\n", decision->next_state, decision->go_forward);
+        }
     }
 
-    return 0;
-}
-
-int get_next_lexem(file_buffer *buffer, lexem_buffer *lexem)
-{
-    reset_lexem_buffer(lexem);
-
-    do
-        if (find_lexem(buffer, lexem))
-            return 1;
-    while (read_file(buffer));
-
-    return 0;
-}
-
-char *get_type_label(int type)
-{
-    if (type == -1)
-        return "ID";
-
-    return SPECIAL_WORDS[type];
+    return NULL;
 }
