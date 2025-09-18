@@ -32,6 +32,6 @@ run: $(TARGET)
 	./$(TARGET) input/tiny.txt
 
 clean:
-	rm -f $(TARGET) $(DIST_DIR)
+	rm $(DIST_DIR) -R
 
 .PHONY: all clean

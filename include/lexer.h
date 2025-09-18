@@ -14,8 +14,10 @@ typedef struct
 typedef struct
 {
     char **characters;
-    int **states;
+    bool *final_states;
     lexer_decision ***data;
+    int rows;
+    int columns;
 } lexer_table;
 
 typedef struct
@@ -31,5 +33,7 @@ void deallocate_lexem_buffer(lexem *kill);
 lexem get_next_lexem(file_buffer *buffer, lexer_table *table);
 
 lexer_table *read_lexer_table(FILE *file);
+
+void deallocate_lexem_table(lexer_table *table);
 
 #endif
