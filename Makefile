@@ -31,6 +31,9 @@ $(DIST_DIR)/%.o: $(SRC_DIR)/%.c
 run: $(TARGET)
 	./$(TARGET) input/tiny.txt
 
+val: $(TARGET)
+	valgrind --leak-check=full --show-leak-kinds=all ./$(TARGET)
+
 clean:
 	rm $(DIST_DIR) -R
 

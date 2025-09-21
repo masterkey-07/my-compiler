@@ -11,7 +11,7 @@ typedef struct
     bool go_forward;
 } lexer_decision;
 
-typedef struct
+typedef struct t_lexer_table
 {
     char **characters;
     bool *final_states;

@@ -167,7 +167,24 @@ list_node *read_buffer_and_add_node(char *buffer, int total_columns, list_node *
     for (int index = 0; index < columns_number; index++)
         decisions[index] = parse_decision(parsed_strings[index]);
 
-    return create_or_insert_list_node(parsed_strings[columns_number][0] == 'V', decisions, reference_node);
+    bool final_state = parsed_strings[columns_number][0] == 'V';
+
+    free(parsed_strings);
+
+    return create_or_insert_list_node(final_state, decisions, reference_node);
+}
+
+void deallocate_lexem_table(lexer_table *table)
+{
+    for (int row = 0; row < table->rows; row++)
+        for (int column = 0; column < table->columns; column++)
+            deallocate_lexem_buffer(table->data[row][column]);
+
+    free(table->data);
+    free(table->characters);
+    // free(table->final_states);
+
+    free(table);
 }
 
 lexer_table *
@@ -188,7 +205,7 @@ read_lexer_table(FILE *file)
 
     list_node *head_node = create_or_insert_list_node(-1, NULL, NULL);
 
-    list_node *reference_node = head_node;
+    list_node *reference_node = head_node, *free_node = NULL;
 
     while (fgets(buffer, LINE_SIZE, file))
     {
@@ -196,6 +213,7 @@ read_lexer_table(FILE *file)
         reference_node = read_buffer_and_add_node(buffer, total_columns_number, reference_node);
     }
 
+    free_node = head_node;
     reference_node = head_node->next_node;
 
     lexer_table *table = malloc_lexer_table(columns_number, rows_number);
