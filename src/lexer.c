@@ -178,17 +178,15 @@ void deallocate_lexem_table(lexer_table *table)
 {
     for (int row = 0; row < table->rows; row++)
         for (int column = 0; column < table->columns; column++)
-            deallocate_lexem_buffer(table->data[row][column]);
+            free(table->data[row][column]);
 
     free(table->data);
     free(table->characters);
     // free(table->final_states);
-
     free(table);
 }
 
-lexer_table *
-read_lexer_table(FILE *file)
+lexer_table *read_lexer_table(FILE *file)
 {
     char buffer[LINE_SIZE];
     int rows_number = 0, row_index = 0;
