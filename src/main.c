@@ -48,5 +48,7 @@ int main(int argc, char const *argv[])
 
     deallocate_lexem_table(table);
 
+    fclose(file);
+
     return 0;
 }

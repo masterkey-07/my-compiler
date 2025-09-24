@@ -16,18 +16,18 @@ typedef struct t_list_node
     struct t_list_node *next_node;
 } list_node;
 
-list_node *create_or_insert_list_node(int v, lexer_decision **decisions, list_node *n)
+list_node *create_or_insert_list_node(bool final_state, lexer_decision **decisions, list_node *past_node)
 {
     list_node *new = (list_node *)malloc(sizeof(list_node));
 
-    new->final_state = v;
+    new->final_state = final_state;
     new->decisions = decisions;
     new->next_node = NULL;
 
-    if (n == NULL)
+    if (past_node == NULL)
         return new;
 
-    n->next_node = new;
+    past_node->next_node = new;
 
     return new;
 }
@@ -113,7 +113,7 @@ lexer_decision *parse_decision(char *raw_decision)
 
 lexer_table *malloc_lexer_table(int columns, int rows)
 {
-    lexer_table *table = (lexer_table *)malloc(sizeof(table));
+    lexer_table *table = (lexer_table *)malloc(sizeof(lexer_table));
 
     table->final_states = (bool *)malloc(sizeof(bool) * rows);
 
@@ -167,7 +167,7 @@ list_node *read_buffer_and_add_node(char *buffer, int total_columns, list_node *
     for (int index = 0; index < columns_number; index++)
         decisions[index] = parse_decision(parsed_strings[index]);
 
-    bool final_state = parsed_strings[columns_number][0] == 'V';
+    bool final_state = parsed_strings[columns_number][0] == 'V' ? true : false;
 
     free(parsed_strings);
 
@@ -177,12 +177,16 @@ list_node *read_buffer_and_add_node(char *buffer, int total_columns, list_node *
 void deallocate_lexem_table(lexer_table *table)
 {
     for (int row = 0; row < table->rows; row++)
+    {
         for (int column = 0; column < table->columns; column++)
             free(table->data[row][column]);
 
+        free(table->data[row]);
+    }
+
+    free(table->final_states);
     free(table->data);
     free(table->characters);
-    // free(table->final_states);
     free(table);
 }
 
@@ -218,13 +222,18 @@ lexer_table *read_lexer_table(FILE *file)
 
     while (reference_node != NULL)
     {
+        free(free_node);
+
         table->data[row_index] = reference_node->decisions;
         table->final_states[row_index] = reference_node->final_state;
 
         row_index++;
 
+        free_node = reference_node;
         reference_node = reference_node->next_node;
     }
+
+    free(free_node);
 
     table->characters = columns;
     table->rows = rows_number;
