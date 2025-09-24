@@ -16,7 +16,9 @@ int main(int argc, char const *argv[])
     {
         for (int column_index = 0; column_index < table->columns; column_index++)
         {
-            printf("next_state:%d advance:%d\t", table->data[row_index][column_index]->next_state, table->data[row_index][column_index]->go_forward);
+            int next_state = table->data[row_index][column_index]->next_state;
+            int should_move_foward = table->data[row_index][column_index]->go_forward;
+            printf("next_state:%d advance:%d\t", next_state, should_move_foward);
         }
 
         printf("final_state:%d\n", table->final_states[row_index]);
