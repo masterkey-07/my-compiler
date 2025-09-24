@@ -119,9 +119,6 @@ lexer_table *malloc_lexer_table(int columns, int rows)
 
     table->data = (lexer_decision ***)malloc(sizeof(lexer_decision **) * rows);
 
-    for (int row_index = 0; row_index < rows; row_index++)
-        table->data[row_index] = (lexer_decision **)malloc(sizeof(lexer_decision *) * (columns - 1));
-
     return table;
 }
 
@@ -216,6 +213,7 @@ lexer_table *read_lexer_table(FILE *file)
     }
 
     free_node = head_node;
+
     reference_node = head_node->next_node;
 
     lexer_table *table = malloc_lexer_table(columns_number, rows_number);
