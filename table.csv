@@ -1,3 +1,5 @@
-P,V, A
+P,digit, A
  1 V,  2 V,V
  NULL,1 F,F
+ 1 V,  4 V,V
+ 5 V,  2 V,V

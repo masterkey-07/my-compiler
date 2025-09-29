@@ -137,10 +137,16 @@ void set_columns_in_line(char **columns, char *buffer)
 {
     int index = 0;
 
-    columns[0] = strtok(buffer, ",");
+    char *token = strtok(buffer, ",");
 
-    while (columns[index] != NULL)
-        columns[++index] = strtok(NULL, ",");
+    while (token != NULL)
+    {
+        columns[index] = (char *)malloc(COLUMN_SIZE);
+        strncpy(columns[index], token, COLUMN_SIZE - 1);
+        columns[index][COLUMN_SIZE - 1] = '\0'; // Ensure null-termination
+        index++;
+        token = strtok(NULL, ",");
+    }
 }
 
 list_node *read_buffer_and_add_node(char *buffer, int total_columns, list_node *reference_node)
@@ -196,7 +202,7 @@ lexer_table *read_lexer_table(FILE *file)
 
     int total_columns_number = count_columns_by_comma(buffer);
 
-    char **columns = (char **)malloc(COLUMN_SIZE * total_columns_number);
+    char **columns = (char **)malloc(sizeof(char *) * total_columns_number);
 
     set_columns_in_line(columns, buffer);
 
@@ -234,6 +240,7 @@ lexer_table *read_lexer_table(FILE *file)
     free(free_node);
 
     table->characters = columns;
+
     table->rows = rows_number;
     table->columns = columns_number;
 
