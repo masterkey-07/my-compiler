@@ -30,7 +30,7 @@ lexem *allocate_lexem_buffer();
 
 void deallocate_lexem_buffer(lexem *kill);
 
-lexem get_next_lexem(file_buffer *buffer, lexer_table *table);
+lexem *get_next_lexem(file_buffer *buffer, lexer_table *table);
 
 lexer_table *read_lexer_table(FILE *file);
 

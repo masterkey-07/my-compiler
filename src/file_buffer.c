@@ -34,6 +34,8 @@ char *read_file(file_buffer *buffer)
 
 char get_next_char(file_buffer *buffer)
 {
+    printf("HI: %s\n", buffer->data);
+
     char next_char = buffer->data[buffer->index];
 
     if (next_char == EOF)

@@ -1,13 +1,10 @@
-#include "lexer.h"
 #include <string.h>
+
+#include "lexer.h"
+#include "file_buffer.h"
 
 #define COLUMN_SIZE sizeof(char) * 20
 #define LINE_SIZE 4096 * 4
-
-lexem *allocate_lexem_buffer(void)
-{
-    return (lexem *)malloc(sizeof(lexem));
-}
 
 typedef struct t_list_node
 {
@@ -30,27 +27,6 @@ list_node *create_or_insert_list_node(bool final_state, lexer_decision **decisio
     past_node->next_node = new;
 
     return new;
-}
-
-void deallocate_lexem_buffer(lexem *kill)
-{
-    if (kill == NULL)
-        return;
-
-    if (kill->data != NULL)
-        free(kill->data);
-
-    free(kill);
-}
-
-lexem get_next_lexem(file_buffer *buffer, lexer_table *table)
-{
-    lexem a = {
-        data : "ABC",
-        token : 10
-    };
-
-    return a;
 }
 
 char *parse_string(char *string)
@@ -245,4 +221,92 @@ lexer_table *read_lexer_table(FILE *file)
     table->columns = columns_number;
 
     return table;
+}
+
+int get_columns_index(char c, char **columns, int length)
+{
+
+    for (int column_index = 0; column_index < length; column_index++)
+    {
+
+        if (strcmp(columns[column_index], "space") == 0 && c == ' ')
+            return column_index;
+        else if (strcmp(columns[column_index], "digit") == 0 && isdigit(c) == 0)
+            return column_index;
+        else if (strcmp(columns[column_index], "char") == 0 && isalpha(c) == 0)
+            return column_index;
+        else if (strcmp(&c, columns[column_index]) == 0)
+            return column_index;
+    }
+    return -1;
+}
+
+lexem *get_next_lexem(file_buffer *buffer, lexer_table *table)
+{
+    char c;
+
+    int state = 0, index = 0;
+
+    lexem *lexem_item = allocate_lexem_buffer();
+
+    do
+    {
+        c = get_next_char(buffer);
+        printf("data: %s\n", buffer->data);
+
+        printf("char: %c\n", c);
+
+    } while (c == ' ' || c == EOF);
+
+    if (c == EOF)
+        return NULL;
+
+    do
+    {
+
+        int column = get_columns_index(c, table->characters, table->columns);
+
+        if (column == -1)
+            exit(1);
+
+        lexer_decision *decision = table->data[state][column];
+
+        bool is_final_state = table->final_states[state];
+
+        if (is_final_state)
+            lexem_item->token = state;
+
+        if (is_final_state == true && (c == EOF || c == ' '))
+            return lexem_item;
+
+        if (decision->go_forward == false)
+            go_back(buffer);
+        else
+            buffer->data[index++] = c;
+
+        state = decision->next_state;
+
+    } while ((c = get_next_char(buffer)));
+
+    return NULL;
+}
+
+lexem *allocate_lexem_buffer(void)
+{
+    lexem *buffer = (lexem *)malloc(sizeof(lexem));
+
+    buffer->data = (char *)malloc(sizeof(char) * 200);
+
+    return buffer;
+}
+
+void deallocate_lexem_buffer(lexem *kill)
+{
+    if (kill == NULL)
+        return;
+
+    if (kill->data != NULL)
+        free(kill->data);
+
+    free(kill);
 }

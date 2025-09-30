@@ -29,7 +29,7 @@ $(DIST_DIR)/%.o: $(SRC_DIR)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 run: $(TARGET)
-	./$(TARGET) input/tiny.txt
+	./$(TARGET) input/input.txt
 
 val: $(TARGET)
 	valgrind --leak-check=full --show-leak-kinds=all ./$(TARGET)

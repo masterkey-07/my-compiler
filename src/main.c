@@ -6,49 +6,40 @@
 
 int main(int argc, char const *argv[])
 {
-    FILE *file = fopen("table.csv", "rb");
+    FILE *table_file = fopen("table.csv", "rb");
 
-    lexer_table *table = read_lexer_table(file);
+    if (table_file == NULL)
+        return 0;
 
-    printf("columns: %d rows: %d\n", table->columns, table->rows);
+    lexer_table *table = read_lexer_table(table_file);
 
-    for (int row_index = 0; row_index < table->rows; row_index++)
+    if (argc != 2)
+        return 0;
+
+    char const *file_name = argv[1];
+
+    FILE *file = fopen(file_name, "rb");
+
+    if (file == NULL)
+        return 0;
+
+    file_buffer *buffer = allocate_buffer(file);
+
+    lexem *x = get_next_lexem(buffer, table);
+
+    while (x != NULL)
     {
-        for (int column_index = 0; column_index < table->columns; column_index++)
-        {
-            int next_state = table->data[row_index][column_index]->next_state;
-            int should_move_foward = table->data[row_index][column_index]->go_forward;
-            printf("%s \tnext_state:%d\tadvance:%d\t|\t", table->characters[column_index], next_state, should_move_foward);
-        }
+        printf("%d - %s\n", x->token, x->data);
 
-        printf("final_state:%d\n", table->final_states[row_index]);
-
-        printf("\n");
+        x = get_next_lexem(buffer, table);
     }
 
-    // if (argc != 2)
-    //     return 0;
+    deallocate_buffer(buffer);
 
-    // char const *file_name = argv[1];
-
-    // FILE *file = fopen(file_name, "rb");
-
-    // if (file == NULL)
-    //     return 0;
-
-    // file_buffer *buffer = allocate_buffer(file);
-
-    // printf("%d, %s\n", f.token, f.data);
-
-    // deallocate_buffer(buffer);
-
-    // fclose(file);
-
-    // printf("done\n");
+    fclose(table_file);
 
     deallocate_lexem_table(table);
 
-    fclose(file);
-
+    printf("done\n");
     return 0;
 }
