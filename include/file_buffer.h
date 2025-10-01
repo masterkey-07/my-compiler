@@ -22,6 +22,4 @@ char get_next_char(struct file_buffer *buffer);
 
 void go_back(file_buffer *buffer);
 
-char *read_file(file_buffer *buffer);
-
 #endif

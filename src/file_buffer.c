@@ -34,17 +34,26 @@ char *read_file(file_buffer *buffer)
 
 char get_next_char(file_buffer *buffer)
 {
-    printf("HI: %s\n", buffer->data);
-
     char next_char = buffer->data[buffer->index];
 
     if (next_char == EOF)
         return EOF;
 
-    buffer->index++;
-
     if (next_char == '\0')
-        return '\0';
+    {
+        next_char = read_file(buffer);
+
+        if (next_char == NULL)
+        {
+            buffer->data[buffer->index] = EOF;
+
+            return EOF;
+        }
+
+        next_char = buffer->data[buffer->index];
+    }
+
+    buffer->index++;
 
     if (next_char == '\n')
         buffer->line++;
