@@ -21,7 +21,7 @@ int main(int argc, char const *argv[])
     FILE *file = fopen(file_name, "rb");
 
     if (file == NULL)
-        return 0;
+        return 1;
 
     file_buffer *buffer = allocate_buffer(file);
 

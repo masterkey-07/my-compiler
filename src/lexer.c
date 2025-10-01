@@ -225,19 +225,20 @@ lexer_table *read_lexer_table(FILE *file)
 
 int get_columns_index(char c, char **columns, int length)
 {
+    for (int column_index = 0; column_index < length; column_index++)
+        if (strcmp(&c, columns[column_index]) == 0)
+            return column_index;
 
     for (int column_index = 0; column_index < length; column_index++)
-    {
-
         if (strcmp(columns[column_index], "space") == 0 && c == ' ')
             return column_index;
-        else if (strcmp(columns[column_index], "digit") == 0 && isdigit(c) == 0)
+        else if (strcmp(columns[column_index], "digit") == 0 && isdigit(c))
             return column_index;
-        else if (strcmp(columns[column_index], "char") == 0 && isalpha(c) == 0)
+        else if (strcmp(columns[column_index], "char") == 0 && isalpha(c))
             return column_index;
-        else if (strcmp(&c, columns[column_index]) == 0)
+        else if (strcmp(columns[column_index], "linebreak") == 0 && c == '\n')
             return column_index;
-    }
+
     return -1;
 }
 
@@ -245,48 +246,47 @@ lexem *get_next_lexem(file_buffer *buffer, lexer_table *table)
 {
     char c;
 
-    int state = 0, index = 0;
+    int current_state = 0, index = 0;
 
     lexem *lexem_item = allocate_lexem_buffer();
 
     do
-    {
         c = get_next_char(buffer);
-        printf("data: %s\n", buffer->data);
-
-        printf("char: %c\n", c);
-
-    } while (c == ' ' || c == EOF);
+    while (c == ' ');
 
     if (c == EOF)
         return NULL;
 
     do
     {
-
         int column = get_columns_index(c, table->characters, table->columns);
 
         if (column == -1)
             exit(1);
 
-        lexer_decision *decision = table->data[state][column];
+        lexer_decision *decision = table->data[current_state][column];
 
-        bool is_final_state = table->final_states[state];
+        bool is_final_state = table->final_states[current_state];
 
         if (is_final_state)
-            lexem_item->token = state;
+            lexem_item->token = current_state;
 
-        if (is_final_state == true && (c == EOF || c == ' '))
+        if (is_final_state == true && decision->next_state == -1)
             return lexem_item;
+
+        if (decision->next_state == -1)
+            exit(1);
 
         if (decision->go_forward == false)
             go_back(buffer);
         else
-            buffer->data[index++] = c;
+            lexem_item->data[index++] = c;
 
-        state = decision->next_state;
+        current_state = decision->next_state;
+    } while ((c = get_next_char(buffer)) != EOF);
 
-    } while ((c = get_next_char(buffer)));
+    if (table->final_states[current_state] == true)
+        return lexem_item;
 
     return NULL;
 }
