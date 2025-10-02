@@ -3,32 +3,37 @@
 #include <stdio.h>
 
 #include "lexer.h"
+#include "utils.h"
+#include "lexer_table.h"
 
 int main(int argc, char const *argv[])
 {
-    // if (argc != 2)
-    //     return 0;
+    print_lexer_table(LEXER_TABLE);
 
-    // char const *file_name = argv[1];
+    if (argc != 2)
+        return 0;
 
-    // FILE *file = fopen(file_name, "rb");
+    char const *file_name = argv[1];
 
-    // if (file == NULL)
-    //     return 1;
+    FILE *file = fopen(file_name, "rb");
 
-    // file_buffer *buffer = allocate_buffer(file);
+    if (file == NULL)
+        return 1;
 
-    // lexem *lexem_found = get_next_lexem(buffer, LEXER_TABLE);
+    file_buffer *buffer = allocate_buffer(file);
 
-    // while (lexem_found != NULL)
-    // {
-    //     printf("%d - %s\n", lexem_found->token, lexem_found->data);
+    lexem *lexem_found = get_next_lexem(buffer, LEXER_TABLE);
 
-    //     lexem_found = get_next_lexem(buffer, table);
-    // }
+    while (lexem_found != NULL)
+    {
+        printf("%d - %s\n", lexem_found->token, lexem_found->data);
 
-    // deallocate_buffer(buffer);
+        lexem_found = get_next_lexem(buffer, LEXER_TABLE);
+    }
 
-    // printf("done\n");
-    // return 0;
+    deallocate_buffer(buffer);
+
+    printf("done\n");
+
+    return 0;
 }

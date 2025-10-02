@@ -236,10 +236,10 @@ int main(int argc, char const *argv[])
     lexer_table *table = read_lexer_table(table_file);
 
     // Generate a C file that defines the lexer_table statically
-    FILE *out = fopen("lexer_table.c", "w");
+    FILE *out = fopen("src/lexer_table.c", "w");
     if (!out)
     {
-        fprintf(stderr, "Failed to open output file.\n");
+        fprintf(stderr, "failed to open output file.\n");
         return 1;
     }
 
@@ -275,7 +275,7 @@ int main(int argc, char const *argv[])
     fprintf(out, "\n");
 
     // Write pointers to rows
-    fprintf(out, "const lexer_decision *lexer_table_data[][%d] = {\n", table->columns);
+    fprintf(out, "const lexer_decision *lexer_table_data[] = {\n", table->columns);
     for (int i = 0; i < table->rows; i++)
     {
         fprintf(out, "    lexer_table_row_%d%s\n", i, (i < table->rows - 1) ? "," : "");
@@ -294,7 +294,7 @@ int main(int argc, char const *argv[])
             table->rows, table->columns);
 
     fclose(out);
-    printf("Static lexer_table written to lexer_table.c\n");
+    printf("static lexer_table written to src/lexer_table.c\n");
 
     deallocate_lexem_table(table);
 

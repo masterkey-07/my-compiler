@@ -22,11 +22,12 @@ int get_columns_index(char c, char **columns, int length)
     return -1;
 }
 
-lexem *get_next_lexem(file_buffer *buffer, lexer_table *table)
+lexem *get_next_lexem(file_buffer *buffer, const lexer_table table)
 {
     char c;
-
-    int current_state = 0, index = 0;
+    bool is_final_state;
+    lexer_decision *decision;
+    int current_state = 0, index = 0, column;
 
     lexem *lexem_item = allocate_lexem_buffer();
 
@@ -39,14 +40,19 @@ lexem *get_next_lexem(file_buffer *buffer, lexer_table *table)
 
     do
     {
-        int column = get_columns_index(c, table->characters, table->columns);
+        printf("char:%c %d\n", c, c == ' ');
+
+        column = get_columns_index(c, table.characters, table.columns);
 
         if (column == -1)
+        {
+            printf("decision not found\n");
             exit(1);
+        }
 
-        lexer_decision *decision = table->data[current_state][column];
+        decision = &table.data[current_state][column];
 
-        bool is_final_state = table->final_states[current_state];
+        is_final_state = table.final_states[current_state];
 
         if (is_final_state)
             lexem_item->token = current_state;
@@ -55,7 +61,10 @@ lexem *get_next_lexem(file_buffer *buffer, lexer_table *table)
             return lexem_item;
 
         if (decision->next_state == -1)
+        {
+            printf("non final null decision found\n");
             exit(1);
+        }
 
         if (decision->go_forward == false)
             go_back(buffer);
@@ -65,7 +74,7 @@ lexem *get_next_lexem(file_buffer *buffer, lexer_table *table)
         current_state = decision->next_state;
     } while ((c = get_next_char(buffer)) != EOF);
 
-    if (table->final_states[current_state] == true)
+    if (table.final_states[current_state] == true)
         return lexem_item;
 
     return NULL;
