@@ -6,40 +6,29 @@
 
 int main(int argc, char const *argv[])
 {
-    FILE *table_file = fopen("table.csv", "rb");
+    // if (argc != 2)
+    //     return 0;
 
-    if (table_file == NULL)
-        return 0;
+    // char const *file_name = argv[1];
 
-    lexer_table *table = read_lexer_table(table_file);
+    // FILE *file = fopen(file_name, "rb");
 
-    if (argc != 2)
-        return 0;
+    // if (file == NULL)
+    //     return 1;
 
-    char const *file_name = argv[1];
+    // file_buffer *buffer = allocate_buffer(file);
 
-    FILE *file = fopen(file_name, "rb");
+    // lexem *lexem_found = get_next_lexem(buffer, LEXER_TABLE);
 
-    if (file == NULL)
-        return 1;
+    // while (lexem_found != NULL)
+    // {
+    //     printf("%d - %s\n", lexem_found->token, lexem_found->data);
 
-    file_buffer *buffer = allocate_buffer(file);
+    //     lexem_found = get_next_lexem(buffer, table);
+    // }
 
-    lexem *x = get_next_lexem(buffer, table);
+    // deallocate_buffer(buffer);
 
-    while (x != NULL)
-    {
-        printf("%d - %s\n", x->token, x->data);
-
-        x = get_next_lexem(buffer, table);
-    }
-
-    deallocate_buffer(buffer);
-
-    fclose(table_file);
-
-    deallocate_lexem_table(table);
-
-    printf("done\n");
-    return 0;
+    // printf("done\n");
+    // return 0;
 }

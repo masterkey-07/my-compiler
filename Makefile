@@ -10,29 +10,33 @@ TESTS_DIR=tests
 DIST_DIR=dist
 
 # FILES
-TARGET = $(DIST_DIR)/main
+MAIN_TARGET = $(DIST_DIR)/main
+OFLEX_TARGET = $(DIST_DIR)/oflex
 TEST = $(wildcard tests/*.c)
 SRC = $(wildcard $(SRC_DIR)/*.c) 
 SRC_OBJS = $(SRC:$(SRC_DIR)/%.c=$(DIST_DIR)/%.o)
 
 # TESTOBJ = $(TEST:.c=.o)
 
-all: $(DIST_DIR) $(TARGET) 
+all: $(DIST_DIR) $(MAIN_TARGET) $(OFLEX_TARGET)
 
 $(DIST_DIR):
 	mkdir $(DIST_DIR)
 
-$(TARGET): $(SRC_OBJS) 
-	$(CC) $(CFLAGS) -o $(TARGET) $(SRC_OBJS)
+$(MAIN_TARGET): $(SRC_OBJS) 
+	$(CC) $(CFLAGS) -o $(MAIN_TARGET) $(DIST_DIR)/file_buffer.o $(DIST_DIR)/lexer.o
+
+$(OFLEX_TARGET): $(SRC_OBJS) 
+	$(CC) $(CFLAGS) -o $(OFLEX_TARGET) $(DIST_DIR)/file_buffer.o $(DIST_DIR)/lexer.o
 
 $(DIST_DIR)/%.o: $(SRC_DIR)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-run: $(TARGET)
-	./$(TARGET) input/input.txt
+run: $(MAIN_TARGET)
+	./$(MAIN_TARGET) input/input.txt
 
-val: $(TARGET)
-	valgrind --leak-check=full --show-leak-kinds=all ./$(TARGET)
+val: $(MAIN_TARGET)
+	valgrind --leak-check=full --show-leak-kinds=all ./$(MAIN_TARGET)
 
 clean:
 	rm $(DIST_DIR) -R
