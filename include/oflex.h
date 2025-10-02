@@ -1,9 +1,9 @@
+#ifndef OFLEX_H
+#define OFLEX_H
+
 #include <stdbool.h>
 #include <ctype.h>
 #include <file_buffer.h>
-
-#ifndef OFLEX_H
-#define OFLEX_H
 
 typedef struct
 {
