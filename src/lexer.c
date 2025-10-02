@@ -40,8 +40,6 @@ lexem *get_next_lexem(file_buffer *buffer, const lexer_table table)
 
     do
     {
-        printf("char:%c %d\n", c, c == ' ');
-
         column = get_columns_index(c, table.characters, table.columns);
 
         if (column == -1)
