@@ -1,3 +1,5 @@
+#include <lex.yy.c
+
 int main(int argc, char const *argv[])
 {
 
