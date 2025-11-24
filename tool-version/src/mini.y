@@ -17,7 +17,6 @@ int yyerror(const char *s) {
 %}
 
 /* ===== Configurações do Bison ===== */
-%define api.pure full
 %define parse.error detailed
 %define api.value.type {int}   /* não usamos valores semânticos por enquanto */
 
@@ -195,6 +194,13 @@ tipo_nao_void
 
 %% /* ===== Código de apoio (main) ===== */
 
-int main(void) {
-  return yyparse();
+int main(int argc, char **argv) {
+    if (argc > 1) {
+        yyin = fopen(argv[1], "r");
+        if (!yyin) {
+            perror("Erro abrindo arquivo");
+            return 1;
+        }
+    }
+    return yyparse();
 }
