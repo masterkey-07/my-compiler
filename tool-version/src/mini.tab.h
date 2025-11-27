@@ -45,9 +45,9 @@
 extern int yydebug;
 #endif
 /* "%code requires" blocks.  */
-#line 4 "mini.y"
+#line 1 "mini.y"
 
-  /* Coloque aqui headers compartilhados entre parser e scanner, se precisar */
+  #include "ast.h"   /* TreeNode e NodeType visíveis para mini.tab.h */
 
 #line 53 "mini.tab.h"
 
@@ -66,12 +66,12 @@ extern int yydebug;
     ELSE = 261,                    /* ELSE  */
     WHILE = 262,                   /* WHILE  */
     RETURN = 263,                  /* RETURN  */
-    ID = 264,                      /* ID  */
-    NUM = 265,                     /* NUM  */
-    LE = 266,                      /* LE  */
-    GE = 267,                      /* GE  */
-    EQ = 268,                      /* EQ  */
-    NE = 269,                      /* NE  */
+    LE = 264,                      /* LE  */
+    GE = 265,                      /* GE  */
+    EQ = 266,                      /* EQ  */
+    NE = 267,                      /* NE  */
+    ID = 268,                      /* ID  */
+    NUM = 269,                     /* NUM  */
     LOWER_THAN_ELSE = 270          /* LOWER_THAN_ELSE  */
   };
   typedef enum yytokentype yytoken_kind_t;
@@ -79,7 +79,18 @@ extern int yydebug;
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
-typedef int YYSTYPE;
+union YYSTYPE
+{
+#line 19 "mini.y"
+
+    int      ival;    /* para NUM */
+    char    *sval;    /* para ID */
+    TreeNode *node;   /* para nós da AST */
+
+#line 91 "mini.tab.h"
+
+};
+typedef union YYSTYPE YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1
 #endif
