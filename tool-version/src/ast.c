@@ -51,24 +51,24 @@ static const char *nodeTypeName(NodeType t) {
         case NODE_PARAM_LIST:   return "PARAM_LIST";
         case NODE_PARAM:        return "PARAM";
         case NODE_COMPOUND:     return "COMPOUND";
-        case NODE_LOCAL_DECLS:  return "LOCAL_DECLS";
-        case NODE_STMT_LIST:    return "STMT_LIST";
+        case NODE_LOCAL_DECLS:  return "LOCAL_DECLS"; //none
+        case NODE_STMT_LIST:    return "STMT_LIST"; //none
         case NODE_EXPR_STMT:    return "EXPR_STMT";
-        case NODE_SELECTION:    return "SELECTION";
-        case NODE_ITERATION:    return "ITERATION";
-        case NODE_RETURN:       return "RETURN";
+        case NODE_SELECTION:    return "SELECTION"; //none
+        case NODE_ITERATION:    return "ITERATION"; //none
+        case NODE_RETURN:       return "RETURN"; //none
         case NODE_EXPR:         return "EXPR";
         case NODE_VAR:          return "VAR";
-        case NODE_SIMPLE_EXPR:  return "SIMPLE_EXPR";
-        case NODE_REL_OP:       return "REL_OP";
-        case NODE_SUM_EXPR:     return "SUM_EXPR";
-        case NODE_SUM_OP:       return "SUM_OP";
-        case NODE_TERM:         return "TERM";
-        case NODE_MUL_OP:       return "MUL_OP";
-        case NODE_FACTOR:       return "FACTOR";
-        case NODE_CALL:         return "CALL";
-        case NODE_ARG_LIST:     return "ARG_LIST";
-        case NODE_CONST:        return "CONST";
+        case NODE_SIMPLE_EXPR:  return "SIMPLE_EXPR"; //none
+        case NODE_REL_OP:       return "REL_OP"; //none
+        case NODE_SUM_EXPR:     return "SUM_EXPR"; //none
+        case NODE_SUM_OP:       return "SUM_OP"; //none
+        case NODE_TERM:         return "TERM"; //none
+        case NODE_MUL_OP:       return "MUL_OP"; //none
+        case NODE_FACTOR:       return "FACTOR"; //none
+        case NODE_CALL:         return "CALL"; //none
+        case NODE_ARG_LIST:     return "ARG_LIST"; //none
+        case NODE_CONST:        return "CONST";// none
         default:                return "UNKNOWN";
     }
 }
