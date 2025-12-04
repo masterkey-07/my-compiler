@@ -1,5 +1,5 @@
 %{
-#include "mini.tab.h"
+#include "parser.tab.h"
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>

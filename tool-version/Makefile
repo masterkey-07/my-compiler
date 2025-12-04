@@ -1,33 +1,53 @@
-# Makefile to build flex lexers: each *.l -> corresponding executable
-FLEX ?= flex
-CC   ?= cc
-CFLAGS ?= -O2 -Wall -Wextra
-LDFLAGS ?=
+SRCDIR := src
+BUILDDIR := build
+BINDIR := bin
+EXEC := cminus
 
-LEX_SRCS := $(wildcard *.l)
-C_SRCS   := $(patsubst %.l,%.c,$(LEX_SRCS))
-BINS     := $(patsubst %.l,%,$(LEX_SRCS))
+CC := gcc
+YACC := bison
+LEX := flex
 
-.PHONY: all clean distclean help
+CFLAGS := -g -O2 -Wall -Wextra -I$(SRCDIR) -I$(BUILDDIR)
+LDFLAGS := -lfl
 
-all: $(BINS)
+OBJS := $(BUILDDIR)/parser.tab.o \
+        $(BUILDDIR)/scanner.o \
+        $(BUILDDIR)/semantic.o \
+        $(BUILDDIR)/symbol.o \
+        $(BUILDDIR)/main.o
 
-# generate C source from .l using flex
-%.c: %.l
-	$(FLEX) -o $@ $<
+.PHONY: all clean rebuild
 
-# compile generated C into executable
-%: %.c
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $<
+all: $(BINDIR)/$(EXEC)
+
+# final executable in bin/
+$(BINDIR)/$(EXEC): $(OBJS) | $(BINDIR)
+	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
+
+# ensure directories exist
+$(BUILDDIR):
+	mkdir -p $(BUILDDIR)
+
+$(BINDIR):
+	mkdir -p $(BINDIR)
+
+# generate parser sources (parser.tab.c and parser.tab.h) into build/
+$(BUILDDIR)/parser.tab.c $(BUILDDIR)/parser.tab.h: $(SRCDIR)/parser.y | $(BUILDDIR)
+	$(YACC) -d -o $(BUILDDIR)/parser.tab.c $(SRCDIR)/parser.y
+
+# generate scanner.c into build/ (depends on generated header)
+$(BUILDDIR)/scanner.c: $(SRCDIR)/scanner.l $(BUILDDIR)/parser.tab.h | $(BUILDDIR)
+	$(LEX) -o $(BUILDDIR)/scanner.c $(SRCDIR)/scanner.l
+
+# compile generated C files in build/ to build/*.o
+$(BUILDDIR)/%.o: $(BUILDDIR)/%.c | $(BUILDDIR)
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+# compile project C sources from src/ to build/*.o
+$(BUILDDIR)/%.o: $(SRCDIR)/%.c | $(BUILDDIR)
+	$(CC) $(CFLAGS) -c -o $@ $<
 
 clean:
-	-rm -f $(C_SRCS)
+	rm -rf $(BUILDDIR) $(BINDIR)
 
-distclean: clean
-	-rm -f $(BINS)
-
-help:
-	@printf "Targets:\n"
-	@printf "  all       - build all executables from .l files\n"
-	@printf "  clean     - remove generated .c files\n"
-	@printf "  distclean - remove generated .c files and binaries\n"
+rebuild: clean all

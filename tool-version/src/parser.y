@@ -1,12 +1,12 @@
 %code requires {
-  #include "ast.h"   /* TreeNode e NodeType visíveis para mini.tab.h */
+  #include "symbol.h"   /* TreeNode e NodeType visíveis para mini.tab.h */
 }
 
 %{
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "ast.h"
+#include "symbol.h"
 
 int yylex(void);
 void yyerror(const char *s) {
@@ -324,14 +324,13 @@ arg_lista:
 
 %%
 
-
-int main(void) {
-    if (yyparse() == 0) {
-        printf("Sintaxe OK.\n");
-        if (syntaxTreeRoot) {
-            printf("Árvore Sintática Abstrata (AST):\n");
-            printTree(syntaxTreeRoot, 0);
-        }
-    }
-    return 0;
-}
+//int main(void) {
+//    if (yyparse() == 0) {
+//        printf("Sintaxe OK.\n");
+//        if (syntaxTreeRoot) {
+//            printf("Árvore Sintática Abstrata (AST):\n");
+//            printTree(syntaxTreeRoot, 0);
+//        }
+//    }
+//    return 0;
+//}

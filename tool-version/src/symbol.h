@@ -1,8 +1,9 @@
-/* ast.h */
+/* symbol.h */
 #ifndef AST_H
 #define AST_H
 
-typedef enum {
+typedef enum
+{
     NODE_PROGRAM,
     NODE_DECL_LIST,
     NODE_VAR_DECL,
@@ -34,11 +35,12 @@ typedef enum {
     NODE_ID
 } NodeType;
 
-typedef struct TreeNode {
+typedef struct TreeNode
+{
     NodeType type;
-    char *text;               /* nome do identificador, operador, número em string etc */
-    struct TreeNode *child[4];/* até 4 filhos (ajusta se precisar) */
-    struct TreeNode *sibling; /* próximo irmão na lista */
+    char *text;                /* nome do identificador, operador, número em string etc */
+    struct TreeNode *child[4]; /* até 4 filhos (ajusta se precisar) */
+    struct TreeNode *sibling;  /* próximo irmão na lista */
 } TreeNode;
 
 /* Cria um novo nó */
