@@ -218,6 +218,8 @@ retorno_decl:
         { $$ = create_node(NODE_GENERIC, "return", $2, NULL, NULL, NULL); }
         ;
 
+/*
+Essa gramática está duplicada, me parece que a anterior é "melhor"
 var:
         ID
           { $$ = create_node(NODE_ID, $1, NULL, NULL, NULL, NULL); }
@@ -228,6 +230,8 @@ var:
             $$ = create_node(NODE_GENERIC, "array_var", idNode, indexNode, NULL, NULL);
           }
         ;
+*/
+
 
 simples_expressao:
         soma_expressao relacional soma_expressao
