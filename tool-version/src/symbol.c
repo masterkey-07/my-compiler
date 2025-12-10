@@ -22,7 +22,7 @@ static char *safe_strcpy(const char *string)
     return copy_string;
 }
 
-TreeNode *create_node(NodeType type, const char *text,
+TreeNode *create_node(NodeType type, int line, const char *text,
                       TreeNode *first_child, TreeNode *second_child,
                       TreeNode *third_node, TreeNode *fourth_node)
 {
@@ -35,6 +35,7 @@ TreeNode *create_node(NodeType type, const char *text,
     }
 
     node->type = type;
+    node->line = line;
     node->text = text ? safe_strcpy(text) : NULL;
     node->child[0] = first_child;
     node->child[1] = second_child;
@@ -127,7 +128,7 @@ void print_symbol_tree(TreeNode *tree, int indent)
         for (int i = 0; i < indent; ++i)
             printf("  ");
 
-        printf("%s", get_type_label(tree->type));
+        printf("%s [%d]", get_type_label(tree->type), tree->line);
 
         if (tree->text)
             printf(" (%s)", tree->text);

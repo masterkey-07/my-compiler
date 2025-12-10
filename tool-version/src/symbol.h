@@ -45,7 +45,7 @@ typedef struct TreeNode
 
 TreeNode *parse_syntax_tree(void);
 
-TreeNode *create_node(NodeType type, const char *text, TreeNode *first_child, TreeNode *second__child, TreeNode *third_child, TreeNode *fourth_child);
+TreeNode *create_node(NodeType type, int line, const char *text, TreeNode *first_child, TreeNode *second__child, TreeNode *third_child, TreeNode *fourth_child);
 
 TreeNode *append_sibling_node(TreeNode *first_node, TreeNode *second_node);
 
