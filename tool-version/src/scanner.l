@@ -23,20 +23,19 @@
 "!="            { return NE; }
 
 [0-9]+          { yylval.ival = atoi(yytext); return NUM; }
-[a-zA-Z_][a-zA-Z0-9_]*  {
+[a-zA-Z]+  {
                       yylval.sval = strdup(yytext);
                       return ID;
                     }
 
 [ \t\r\n]+      { /* ignora espaços/brancos */ }
 "//".*          { /* skip comment */ }
-
 "/*"([^*]|\*+[^*/])*\*+"/"   { /* skip comment */ }
 
 [(){}\[\],;+\-*/<>]   { return yytext[0]; }
 "="                   { return '='; }
 
-.           { fprintf(stderr, "Caracter inesperado: %s\n", yytext); }
+.           { fprintf(stderr, "ERRO LÉXICO: \"%s\" LINHA: %d\n", yytext, yylineno); exit(0); }
 
 %%
 
