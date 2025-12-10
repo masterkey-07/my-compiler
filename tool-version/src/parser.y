@@ -335,15 +335,8 @@ arg_lista:
 %%
 
 TreeNode *parse_syntax_tree(void) {
-    if (yyparse() == 0) {
-        //printf("Sintaxe OK.\n");
+    if (yyparse() == 0)
         return syntax_tree_root;
-
-        //if (syntax_tree_root) {
-        //    printf("Árvore Sintática Abstrata (AST):\n");
-        //    printTree(syntax_tree_root, 0);
-        //}
-    }
 
     return NULL;
 }
