@@ -26,20 +26,22 @@ TreeNode *create_node(NodeType type, const char *text,
                       TreeNode *first_child, TreeNode *second_child,
                       TreeNode *third_node, TreeNode *fourth_node)
 {
-    TreeNode *n = (TreeNode *)malloc(sizeof(TreeNode));
-    if (!n)
+    TreeNode *node = (TreeNode *)malloc(sizeof(TreeNode));
+
+    if (!node)
     {
         fprintf(stderr, "Out of memory in newNode\n");
         exit(1);
     }
-    n->type = type;
-    n->text = text ? safe_strcpy(text) : NULL;
-    n->child[0] = first_child;
-    n->child[1] = second_child;
-    n->child[2] = third_node;
-    n->child[3] = fourth_node;
-    n->sibling = NULL;
-    return n;
+
+    node->type = type;
+    node->text = text ? safe_strcpy(text) : NULL;
+    node->child[0] = first_child;
+    node->child[1] = second_child;
+    node->child[2] = third_node;
+    node->child[3] = fourth_node;
+    node->sibling = NULL;
+    return node;
 }
 
 TreeNode *append_sibling_node(TreeNode *first_node, TreeNode *second_node)

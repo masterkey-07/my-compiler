@@ -36,16 +36,16 @@ typedef enum
 
 typedef struct TreeNode
 {
-    NodeType type;
-    char *text;
     int line;
-    struct TreeNode *child[4];
+    char *text;
+    NodeType type;
     struct TreeNode *sibling;
+    struct TreeNode *child[4];
 } TreeNode;
 
-TreeNode *create_node(NodeType type, const char *text,
-                      TreeNode *first_child, TreeNode *second__child,
-                      TreeNode *third_child, TreeNode *fourth_child);
+TreeNode *parse_syntax_tree(void);
+
+TreeNode *create_node(NodeType type, const char *text, TreeNode *first_child, TreeNode *second__child, TreeNode *third_child, TreeNode *fourth_child);
 
 TreeNode *append_sibling_node(TreeNode *first_node, TreeNode *second_node);
 
