@@ -9,11 +9,12 @@
 #include "symbol.h"
 
 extern int yylineno;
+extern char* yytext;
 
 int yylex(void);
 
-void yyerror(const char *s) {
-    fprintf(stderr, "Erro de sintaxe na linha %d: %s\n", yylineno, s);
+void yyerror() {
+  fprintf(stderr, "ERRO SINTÁTICO: \"%s\" LINHA: %d\n", yytext, yylineno);
 }
 
 TreeNode *syntax_tree_root = NULL;
