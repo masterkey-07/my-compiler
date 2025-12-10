@@ -31,6 +31,8 @@
 [ \t\r\n]+      { /* ignora espaços/brancos */ }
 "//".*          { /* skip comment */ }
 
+"/*"([^*]|\*+[^*/])*\*+"/"   { /* skip comment */ }
+
 [(){}\[\],;+\-*/<>]   { return yytext[0]; }
 "="                   { return '='; }
 
