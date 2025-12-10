@@ -49,5 +49,5 @@ TreeNode *create_node(NodeType type, const char *text, TreeNode *first_child, Tr
 
 TreeNode *append_sibling_node(TreeNode *first_node, TreeNode *second_node);
 
-void print_abstract_symbol_tree(TreeNode *tree, int indent);
+void print_symbol_tree(TreeNode *tree, int indent);
 #endif

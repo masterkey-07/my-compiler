@@ -120,7 +120,7 @@ static const char *get_type_label(NodeType node)
     }
 }
 
-void print_abstract_symbol_tree(TreeNode *tree, int indent)
+void print_symbol_tree(TreeNode *tree, int indent)
 {
     while (tree)
     {
@@ -137,7 +137,7 @@ void print_abstract_symbol_tree(TreeNode *tree, int indent)
         for (int i = 0; i < 4; ++i)
         {
             if (tree->child[i])
-                print_abstract_symbol_tree(tree->child[i], indent + 1);
+                print_symbol_tree(tree->child[i], indent + 1);
         }
 
         tree = tree->sibling;
