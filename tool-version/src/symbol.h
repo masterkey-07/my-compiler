@@ -1,6 +1,5 @@
-/* symbol.h */
-#ifndef AST_H
-#define AST_H
+#ifndef SYMBOL_H
+#define SYMBOL_H
 
 typedef enum
 {
@@ -38,20 +37,17 @@ typedef enum
 typedef struct TreeNode
 {
     NodeType type;
-    char *text;                /* nome do identificador, operador, número em string etc */
-    struct TreeNode *child[4]; /* até 4 filhos (ajusta se precisar) */
-    struct TreeNode *sibling;  /* próximo irmão na lista */
+    char *text;
+    int line;
+    struct TreeNode *child[4];
+    struct TreeNode *sibling;
 } TreeNode;
 
-/* Cria um novo nó */
-TreeNode *newNode(NodeType type, const char *text,
-                  TreeNode *c0, TreeNode *c1,
-                  TreeNode *c2, TreeNode *c3);
+TreeNode *create_node(NodeType type, const char *text,
+                      TreeNode *first_child, TreeNode *second__child,
+                      TreeNode *third_child, TreeNode *fourth_child);
 
-/* Anexa b ao fim da lista de irmãos de a; retorna o primeiro da lista */
-TreeNode *appendSibling(TreeNode *a, TreeNode *b);
+TreeNode *append_sibling_node(TreeNode *first_node, TreeNode *second_node);
 
-/* Imprime a árvore com indentação */
-void printTree(TreeNode *t, int indent);
-
+void print_abstract_symbol_tree(TreeNode *tree, int indent);
 #endif

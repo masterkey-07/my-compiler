@@ -4,23 +4,27 @@
 #include <stdlib.h>
 #include <string.h>
 
-static char *strdup_safe(const char *s)
+static char *safe_strcpy(const char *string)
 {
-    if (!s)
+    if (!string)
         return NULL;
-    char *r = (char *)malloc(strlen(s) + 1);
-    if (!r)
+
+    char *copy_string = (char *)malloc(strlen(string) + 1);
+
+    if (!copy_string)
     {
         fprintf(stderr, "Out of memory in strdup_safe\n");
         exit(1);
     }
-    strcpy(r, s);
-    return r;
+
+    strcpy(copy_string, string);
+
+    return copy_string;
 }
 
-TreeNode *newNode(NodeType type, const char *text,
-                  TreeNode *c0, TreeNode *c1,
-                  TreeNode *c2, TreeNode *c3)
+TreeNode *create_node(NodeType type, const char *text,
+                      TreeNode *first_child, TreeNode *second_child,
+                      TreeNode *third_node, TreeNode *fourth_node)
 {
     TreeNode *n = (TreeNode *)malloc(sizeof(TreeNode));
     if (!n)
@@ -29,29 +33,33 @@ TreeNode *newNode(NodeType type, const char *text,
         exit(1);
     }
     n->type = type;
-    n->text = text ? strdup_safe(text) : NULL;
-    n->child[0] = c0;
-    n->child[1] = c1;
-    n->child[2] = c2;
-    n->child[3] = c3;
+    n->text = text ? safe_strcpy(text) : NULL;
+    n->child[0] = first_child;
+    n->child[1] = second_child;
+    n->child[2] = third_node;
+    n->child[3] = fourth_node;
     n->sibling = NULL;
     return n;
 }
 
-TreeNode *appendSibling(TreeNode *a, TreeNode *b)
+TreeNode *append_sibling_node(TreeNode *first_node, TreeNode *second_node)
 {
-    if (!a)
-        return b;
-    TreeNode *p = a;
-    while (p->sibling)
-        p = p->sibling;
-    p->sibling = b;
-    return a;
+    if (!first_node)
+        return second_node;
+
+    TreeNode *reference_node = first_node;
+
+    while (reference_node->sibling)
+        reference_node = reference_node->sibling;
+
+    reference_node->sibling = second_node;
+
+    return first_node;
 }
 
-static const char *nodeTypeName(NodeType t)
+static const char *get_type_label(NodeType node)
 {
-    switch (t)
+    switch (node)
     {
     case NODE_PROGRAM:
         return "PROGRAM";
@@ -110,24 +118,26 @@ static const char *nodeTypeName(NodeType t)
     }
 }
 
-void printTree(TreeNode *t, int indent)
+void print_abstract_symbol_tree(TreeNode *tree, int indent)
 {
-    while (t)
+    while (tree)
     {
         for (int i = 0; i < indent; ++i)
             printf("  ");
 
-        printf("%s", nodeTypeName(t->type));
-        if (t->text)
-            printf(" (%s)", t->text);
+        printf("%s", get_type_label(tree->type));
+
+        if (tree->text)
+            printf(" (%s)", tree->text);
+
         printf("\n");
 
         for (int i = 0; i < 4; ++i)
         {
-            if (t->child[i])
-                printTree(t->child[i], indent + 1);
+            if (tree->child[i])
+                print_abstract_symbol_tree(tree->child[i], indent + 1);
         }
 
-        t = t->sibling;
+        tree = tree->sibling;
     }
 }
