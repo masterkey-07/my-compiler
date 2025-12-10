@@ -8,12 +8,15 @@
 #include <string.h>
 #include "symbol.h"
 
+extern int yylineno;
+
 int yylex(void);
+
 void yyerror(const char *s) {
-    fprintf(stderr, "Erro de sintaxe: %s\n", s);
+    fprintf(stderr, "Erro de sintaxe na linha %d: %s\n", yylineno, s);
 }
 
-TreeNode *syntaxTreeRoot = NULL;
+TreeNode *syntax_tree_root = NULL;
 %}
 
 %union {
@@ -21,6 +24,8 @@ TreeNode *syntaxTreeRoot = NULL;
     char    *sval;    /* para ID */
     TreeNode *node;   /* para nós da AST */
 }
+
+%locations
 
 %token INT VOID IF ELSE WHILE RETURN
 %token LE GE EQ NE
@@ -52,7 +57,7 @@ programa
   : declaracao_lista
     {
         $$ = create_node(NODE_PROGRAM, "program", $1, NULL, NULL, NULL);
-        syntaxTreeRoot = $$;
+        syntax_tree_root = $$;
     }
   ;
 
@@ -115,8 +120,8 @@ params
   ;
 
 param_lista
-  : param_lista param
-    { $$ = append_sibling_node($1, $2); }
+  : param_lista ',' param
+    { $$ = append_sibling_node($1, $3); }
   | param
     { $$ = create_node(NODE_PARAM_LIST, NULL, $1, NULL, NULL, NULL); }
   ;
@@ -128,8 +133,8 @@ param
     }
   | tipo_nao_void ID '[' ']'
     {
-        TreeNode *arrayMark = create_node(NODE_VAR, "array", NULL, NULL, NULL, NULL);
-        $$ = create_node(NODE_PARAM, $2, $1, arrayMark, NULL, NULL);
+        TreeNode *array_mark = create_node(NODE_VAR, "array", NULL, NULL, NULL, NULL);
+        $$ = create_node(NODE_PARAM, $2, $1, array_mark, NULL, NULL);
     }
   ;
 
@@ -225,9 +230,9 @@ var:
           { $$ = create_node(NODE_ID, $1, NULL, NULL, NULL, NULL); }
         | ID '[' expressao ']'
           {
-            TreeNode *idNode    = create_node(NODE_ID, $1, NULL, NULL, NULL, NULL);
+            TreeNode *node_id    = create_node(NODE_ID, $1, NULL, NULL, NULL, NULL);
             TreeNode *indexNode = create_node(NODE_GENERIC, "index", $3, NULL, NULL, NULL);
-            $$ = create_node(NODE_GENERIC, "array_var", idNode, indexNode, NULL, NULL);
+            $$ = create_node(NODE_GENERIC, "array_var", node_id, indexNode, NULL, NULL);
           }
         ;
 */
@@ -301,8 +306,8 @@ fator:
 ativacao:
         ID '(' args ')'
           {
-            TreeNode *idNode = create_node(NODE_ID, $1, NULL, NULL, NULL, NULL);
-            $$ = create_node(NODE_GENERIC, "call", idNode, $3, NULL, NULL );
+            TreeNode *node_id = create_node(NODE_ID, $1, NULL, NULL, NULL, NULL);
+            $$ = create_node(NODE_GENERIC, "call", node_id, $3, NULL, NULL );
           }
         ;
 
@@ -328,13 +333,16 @@ arg_lista:
 
 %%
 
-//int main(void) {
-//    if (yyparse() == 0) {
-//        printf("Sintaxe OK.\n");
-//        if (syntaxTreeRoot) {
-//            printf("Árvore Sintática Abstrata (AST):\n");
-//            printTree(syntaxTreeRoot, 0);
-//        }
-//    }
-//    return 0;
-//}
+TreeNode *parse_syntax_tree(void) {
+    if (yyparse() == 0) {
+        //printf("Sintaxe OK.\n");
+        return syntax_tree_root;
+
+        //if (syntax_tree_root) {
+        //    printf("Árvore Sintática Abstrata (AST):\n");
+        //    printTree(syntax_tree_root, 0);
+        //}
+    }
+
+    return NULL;
+}
