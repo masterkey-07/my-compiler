@@ -1,4 +1,3 @@
-/* symbol.c */
 #include "symbol.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -22,9 +21,7 @@ static char *safe_strcpy(const char *string)
     return copy_string;
 }
 
-TreeNode *create_node(NodeType type, int line, const char *text,
-                      TreeNode *first_child, TreeNode *second_child,
-                      TreeNode *third_node, TreeNode *fourth_node)
+TreeNode *create_node(NodeType type, int line, const char *text, TreeNode *first_child, TreeNode *second_child, TreeNode *third_node, TreeNode *fourth_node)
 {
     TreeNode *node = (TreeNode *)malloc(sizeof(TreeNode));
 
@@ -45,77 +42,78 @@ TreeNode *create_node(NodeType type, int line, const char *text,
     return node;
 }
 
-TreeNode *append_sibling_node(TreeNode *first_node, TreeNode *second_node)
-{
-    if (!first_node)
-        return second_node;
-
-    TreeNode *reference_node = first_node;
-
-    while (reference_node->sibling)
-        reference_node = reference_node->sibling;
-
-    reference_node->sibling = second_node;
-
-    return first_node;
-}
-
 static const char *get_type_label(NodeType node)
 {
     switch (node)
     {
     case NODE_PROGRAM:
-        return "PROGRAM";
-    case NODE_DECL_LIST:
-        return "DECL_LIST";
-    case NODE_VAR_DECL:
-        return "VAR_DECL";
-    case NODE_FUN_DECL:
-        return "FUN_DECL";
+        return "NODE_PROGRAM";
+    case NODE_DECLARATION_LIST:
+        return "NODE_DECLARATION_LIST";
+    case NODE_DECLARATION:
+        return "NODE_DECLARATION";
+    case NODE_ID:
+        return "NODE_ID";
+    case NODE_VAR_DECLARATION:
+        return "NODE_VAR_DECLARATION";
+    case NODE_NUM:
+        return "NODE_NUM";
     case NODE_TYPE:
-        return "TYPE";
+        return "NODE_TYPE";
+    case NODE_FUN_DECLARATION:
+        return "NODE_FUN_DECLARATION";
+    case NODE_PARAMS:
+        return "NODE_PARAMS";
+    case NODE_VOID:
+        return "NODE_VOID";
     case NODE_PARAM_LIST:
-        return "PARAM_LIST";
+        return "NODE_PARAM_LIST";
     case NODE_PARAM:
-        return "PARAM";
-    case NODE_COMPOUND:
-        return "COMPOUND";
-    case NODE_LOCAL_DECLS:
-        return "LOCAL_DECLS"; // none
-    case NODE_STMT_LIST:
-        return "STMT_LIST"; // none
-    case NODE_EXPR_STMT:
-        return "EXPR_STMT";
-    case NODE_SELECTION:
-        return "SELECTION"; // none
-    case NODE_ITERATION:
-        return "ITERATION"; // none
-    case NODE_RETURN:
-        return "RETURN"; // none
-    case NODE_EXPR:
-        return "EXPR";
+        return "NODE_PARAM";
+    case NODE_EMPTY_ARRAY:
+        return "NODE_EMPTY_ARRAY";
+    case NODE_COMPOUND_DECLARATION:
+        return "NODE_COMPOUND_DECLARATION";
+    case NODE_LOCAL_DECLARATIONS:
+        return "NODE_LOCAL_DECLARATIONS";
+    case NODE_STATEMENT_LIST:
+        return "NODE_STATEMENT_LIST";
+    case NODE_STATEMENT:
+        return "NODE_STATEMENT";
+    case NODE_EXPRESSION_STATEMENT:
+        return "NODE_EXPRESSION_STATEMENT";
+    case NODE_ASSIGN:
+        return "NODE_ASSIGN";
+    case NODE_EXPRESSION:
+        return "NODE_EXPRESSION";
+    case NODE_SIMPLE_EXPRESSION:
+        return "NODE_SIMPLE_EXPRESSION";
     case NODE_VAR:
-        return "VAR";
-    case NODE_SIMPLE_EXPR:
-        return "SIMPLE_EXPR"; // none
-    case NODE_REL_OP:
-        return "REL_OP"; // none
-    case NODE_SUM_EXPR:
-        return "SUM_EXPR"; // none
-    case NODE_SUM_OP:
-        return "SUM_OP"; // none
+        return "NODE_VAR";
+    case NODE_SELECTION_DECLARATION:
+        return "NODE_SELECTION_DECLARATION";
+    case NODE_ITERATION_DECLARATION:
+        return "NODE_ITERATION_DECLARATION";
+    case NODE_RETURN_DECLARATION:
+        return "NODE_RETURN_DECLARATION";
+    case NODE_RELATION_OPERATION:
+        return "NODE_RELATION_OPERATION";
+    case NODE_SUM_EXPRESSION:
+        return "NODE_SUM_EXPRESSION";
+    case NODE_SUM_OPERATION:
+        return "NODE_SUM_OPERATION";
     case NODE_TERM:
-        return "TERM"; // none
-    case NODE_MUL_OP:
-        return "MUL_OP"; // none
+        return "NODE_TERM";
+    case NODE_MULTIPLICATION_OPERATION:
+        return "NODE_MULTIPLICATION_OPERATION";
     case NODE_FACTOR:
-        return "FACTOR"; // none
+        return "NODE_FACTOR";
     case NODE_CALL:
-        return "CALL"; // none
-    case NODE_ARG_LIST:
-        return "ARG_LIST"; // none
-    case NODE_CONST:
-        return "CONST"; // none
+        return "NODE_CALL";
+    case NODE_ARGUMENTS:
+        return "NODE_ARGUMENTS";
+    case NODE_ARGUMENT_LIST:
+        return "NODE_ARGUMENT_LIST";
     default:
         return "UNKNOWN";
     }

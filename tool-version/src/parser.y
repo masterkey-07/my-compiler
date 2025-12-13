@@ -1,5 +1,5 @@
 %code requires {
-  #include "symbol.h"   /* TreeNode e NodeType visíveis para mini.tab.h */
+  #include "symbol.h"
 }
 
 %{
@@ -10,6 +10,8 @@
 
 extern int yylineno;
 extern char* yytext;
+extern FILE *yyin;
+
 
 int yylex(void);
 
@@ -34,14 +36,14 @@ TreeNode *syntax_tree_root = NULL;
 %token <sval> ID
 %token <ival> NUM
 
-%type <node> programa declaracao_lista declaracao
-%type <node> var_declaracao tipo_especificador tipo_nao_void
-%type <node> fun_declaracao params param_lista param
-%type <node> composto_decl local_declaracoes statement_lista
-%type <node> statement expressao_decl selecao_decl iteracao_decl retorno_decl
-%type <node> expressao var simples_expressao relacional
-%type <node> soma_expressao termo soma fator mult
-%type <node> ativacao args arg_lista
+%type <node> program declaration_list declaration
+%type <node> var_declaration specifier_type non_void_type
+%type <node> function_declaration params param_list param
+%type <node> compound_declaration local_declarations statement_list
+%type <node> statement expression_declaration selection_declaration iteration_declaration return_declaration
+%type <node> expression var simple_expression relational
+%type <node> sum_expression term sum factor multiplication
+%type <node> call arguments argument_list
 
 %right '='
 %nonassoc LOWER_THAN_ELSE
@@ -50,293 +52,296 @@ TreeNode *syntax_tree_root = NULL;
 %left '+' '-'
 %left '*' '/'
 
-%start programa
+%start program
 
 %%
 
-programa
-  : declaracao_lista
+program
+  : declaration_list
     {
         $$ = create_node(NODE_PROGRAM, @1.first_line, "program", $1, NULL, NULL, NULL);
         syntax_tree_root = $$;
     }
   ;
 
-declaracao_lista
-  : declaracao_lista declaracao
-    { $$ = append_sibling_node($1, $2); }
-  | declaracao
-    { $$ = create_node(NODE_DECL_LIST, @1.first_line, NULL, $1, NULL, NULL, NULL); }
+declaration_list
+  : declaration_list declaration
+    { $$ = create_node(NODE_DECLARATION_LIST, @1.first_line, NULL, $1, $2, NULL, NULL); }
+  | declaration
+    { $$ = create_node(NODE_DECLARATION_LIST, @1.first_line, NULL, $1, NULL, NULL, NULL); }
   ;
 
-declaracao
-  : var_declaracao
-    { $$ = $1; }
-  | fun_declaracao
-    { $$ = $1; }
+declaration
+  : var_declaration
+    { $$ = create_node(NODE_DECLARATION, @1.first_line, NULL, $1, NULL, NULL, NULL); }
+  | function_declaration
+    { $$ = create_node(NODE_DECLARATION, @1.first_line, NULL, $1, NULL, NULL, NULL); }
   ;
 
-var_declaracao
-  : tipo_especificador ID ';'
+var_declaration
+  : specifier_type ID ';'
     {
-        /* nó de variável: texto = nome do identificador */
-        $$ = create_node(NODE_VAR_DECL, @2.first_line, $2, $1, NULL, NULL, NULL);
+        TreeNode *node_id = create_node(NODE_ID, @2.first_line, $2, NULL, NULL, NULL, NULL);
+        
+        $$ = create_node(NODE_VAR_DECLARATION, @2.first_line, NULL, $1, node_id, NULL, NULL);
     }
-  | tipo_especificador ID '[' NUM ']' ';'
+  | specifier_type ID '[' NUM ']' ';'
     {
-        char buf[32];
-        sprintf(buf, "%d", $4);
-        TreeNode *sizeNode = create_node(NODE_CONST, @4.first_line, buf, NULL, NULL, NULL, NULL);
-        $$ = create_node(NODE_VAR_DECL, @2.first_line, $2, $1, sizeNode, NULL, NULL);
+        char buffer[32];
+     
+        sprintf(buffer, "%d", $4);
+     
+        TreeNode *node_id = create_node(NODE_ID, @2.first_line, $2, NULL, NULL, NULL, NULL);
+     
+        TreeNode *node_size = create_node(NODE_NUM, @4.first_line, buffer, NULL, NULL, NULL, NULL);
+     
+        $$ = create_node(NODE_VAR_DECLARATION, @1.first_line, NULL, $1, node_id, node_size, NULL);
     }
   ;
 
-tipo_especificador
+specifier_type
   : INT
     { $$ = create_node(NODE_TYPE, @1.first_line, "int", NULL, NULL, NULL, NULL); }
   | VOID
     { $$ = create_node(NODE_TYPE, @1.first_line, "void", NULL, NULL, NULL, NULL); }
   ;
 
-tipo_nao_void
+non_void_type
   : INT
     { $$ = create_node(NODE_TYPE, @1.first_line, "int", NULL, NULL, NULL, NULL); }
   ;
 
-fun_declaracao
-  : tipo_especificador ID '(' params ')' composto_decl
-    {
-        $$ = create_node(NODE_FUN_DECL, @2.first_line, $2, $1, $4, $6, NULL);
+function_declaration
+  : specifier_type ID '(' params ')' compound_declaration
+    { 
+      TreeNode *node_id = create_node(NODE_ID, @2.first_line, $2, NULL, NULL, NULL, NULL);
+    
+      $$ = create_node(NODE_FUN_DECLARATION, @1.first_line, NULL, $1, node_id, $4, $6); 
     }
   ;
 
 params
-  : param_lista
-    { $$ = $1; }
+  : param_list
+    { $$ = create_node(NODE_PARAMS, @1.first_line, NULL, $1, NULL, NULL, NULL); }
   | VOID
-    {
-        /* função sem parâmetros: podemos usar NULL ou um nó especial */
-        $$ = NULL;
-    }
+    { $$ = create_node(NODE_VOID, @1.first_line, NULL, NULL, NULL, NULL, NULL); }
   ;
 
-param_lista
-  : param_lista ',' param
-    { $$ = append_sibling_node($1, $3); }
+param_list
+  : param_list ',' param
+    { $$ = create_node(NODE_PARAM_LIST, @1.first_line, NULL, $1, $3, NULL, NULL); }
   | param
     { $$ = create_node(NODE_PARAM_LIST, @1.first_line, NULL, $1, NULL, NULL, NULL); }
   ;
 
 param
-  : tipo_nao_void ID
+  : non_void_type ID
     {
-        $$ = create_node(NODE_PARAM, @2.first_line, $2, $1, NULL, NULL, NULL);
+        TreeNode *node_id = create_node(NODE_ID, @2.first_line, $2, NULL, NULL, NULL, NULL);
+
+        $$ = create_node(NODE_PARAM, @1.first_line, NULL, $1, node_id, NULL, NULL);
     }
-  | tipo_nao_void ID '[' ']'
+  | non_void_type ID '[' ']'
     {
-        TreeNode *array_mark = create_node(NODE_VAR, @3.first_line, "array", NULL, NULL, NULL, NULL);
-        $$ = create_node(NODE_PARAM, @2.first_line, $2, $1, array_mark, NULL, NULL);
+        TreeNode *node_id = create_node(NODE_ID, @2.first_line, $2, NULL, NULL, NULL, NULL);
+        
+        TreeNode *empty_array = create_node(NODE_EMPTY_ARRAY, @3.first_line, NULL, NULL, NULL, NULL, NULL);
+        
+        $$ = create_node(NODE_PARAM, @2.first_line, NULL, $1, node_id, empty_array, NULL);
     }
   ;
 
-composto_decl
-  : '{' local_declaracoes statement_lista '}'
-    {
-        $$ = create_node(NODE_COMPOUND, @1.first_line, "block", $2, $3, NULL, NULL);
-    }
+compound_declaration
+  : '{' local_declarations statement_list '}'
+    { $$ = create_node(NODE_COMPOUND_DECLARATION, @1.first_line, NULL, $2, $3, NULL, NULL); }
   ;
 
-local_declaracoes
-  : local_declaracoes var_declaracao
-    { $$ = append_sibling_node($1, $2); }
+local_declarations
+  : local_declarations var_declaration
+    { $$ = create_node(NODE_LOCAL_DECLARATIONS, @1.first_line, NULL, $1, $2, NULL, NULL); }
   | /* empty */
     { $$ = NULL; }
   ;
 
-statement_lista
-  : statement_lista statement
-    { $$ = append_sibling_node($1, $2); }
+statement_list
+  : statement_list statement
+    { $$ = create_node(NODE_STATEMENT_LIST, @1.first_line, NULL, $1, $2, NULL, NULL); }
   | /* empty */
     { $$ = NULL; }
   ;
 
 statement
-  : expressao_decl       { $$ = $1; }
-  | composto_decl        { $$ = $1; }
-  | selecao_decl         { $$ = $1; }
-  | iteracao_decl        { $$ = $1; }
-  | retorno_decl         { $$ = $1; }
+  : expression_declaration       
+    { $$ = create_node(NODE_STATEMENT, @1.first_line, NULL, $1, NULL, NULL, NULL); }
+  | compound_declaration         
+    { $$ = create_node(NODE_STATEMENT, @1.first_line, NULL, $1, NULL, NULL, NULL); }
+  | selection_declaration        
+    { $$ = create_node(NODE_STATEMENT, @1.first_line, NULL, $1, NULL, NULL, NULL); }
+  | iteration_declaration        
+    { $$ = create_node(NODE_STATEMENT, @1.first_line, NULL, $1, NULL, NULL, NULL); }
+  | return_declaration           
+    { $$ = create_node(NODE_STATEMENT, @1.first_line, NULL, $1, NULL, NULL, NULL); }
   ;
 
-expressao_decl
-  : expressao ';'
-    {
-        $$ = create_node(NODE_EXPR_STMT, @1.first_line, "expr_stmt", $1, NULL, NULL, NULL);
-    }
+expression_declaration
+  : expression ';'
+    { $$ = create_node(NODE_EXPRESSION_STATEMENT, @1.first_line, NULL, $1, NULL, NULL, NULL); }
   | ';'
-    {
-        $$ = create_node(NODE_EXPR_STMT, @1.first_line, "empty_stmt", NULL, NULL, NULL, NULL);
-    }
+    { $$ = create_node(NODE_EXPRESSION_STATEMENT, @1.first_line, NULL, NULL, NULL, NULL, NULL); }
   ;
 
-expressao
-  : var '=' expressao
-    {
-        $$ = create_node(NODE_EXPR, @1.first_line, "assign", $1, $3, NULL, NULL);
+expression
+  : var '=' expression
+    { 
+      TreeNode *node_assign = create_node(NODE_ASSIGN, @2.first_line, "=", NULL, NULL, NULL, NULL);
+      
+      $$ = create_node(NODE_EXPRESSION, @1.first_line, NULL, $1, node_assign, $3, NULL); 
     }
-  | simples_expressao
-    { $$ = $1; }
+  | simple_expression
+    { $$ = create_node(NODE_EXPRESSION, @1.first_line, NULL, $1, NULL, NULL, NULL); }
   ;
 
 var
   : ID
     {
-        $$ = create_node(NODE_VAR, @1.first_line, $1, NULL, NULL, NULL, NULL);
+        TreeNode *node_id = create_node(NODE_ID, @1.first_line, $1, NULL, NULL, NULL, NULL);
+        
+        $$ = create_node(NODE_VAR, @1.first_line, NULL, node_id, NULL, NULL, NULL);
     }
-  | ID '[' expressao ']'
+  | ID '[' expression ']'
     {
-        $$ = create_node(NODE_VAR, @1.first_line, $1, $3, NULL, NULL, NULL);
+        TreeNode *node_id = create_node(NODE_ID, @1.first_line, $1, NULL, NULL, NULL, NULL);
+        
+        $$ = create_node(NODE_VAR, @1.first_line, NULL, node_id, $3, NULL, NULL);
     }
   ;
 
-selecao_decl:
-        IF '(' expressao ')' statement %prec LOWER_THAN_ELSE
-        {
-          $$ = create_node(NODE_GENERIC, @1.first_line, "if", $3, $5, NULL, NULL);
-        }
-        | IF '(' expressao ')' statement ELSE statement
-        {
-          $$ = create_node(NODE_GENERIC, @1.first_line, "if_else", $3, $5, $7, NULL);
-        }
+selection_declaration:
+        IF '(' expression ')' statement %prec LOWER_THAN_ELSE
+        { $$ = create_node(NODE_SELECTION_DECLARATION, @1.first_line, "if", $3, $5, NULL, NULL); }
+        | IF '(' expression ')' statement ELSE statement
+        { $$ = create_node(NODE_SELECTION_DECLARATION, @1.first_line, "if_else", $3, $5, $7, NULL); }
         ;
 
-iteracao_decl:
-        WHILE '(' expressao ')' statement
-        {
-          $$ = create_node(NODE_GENERIC, @1.first_line, "while", $3, $5, NULL, NULL);
-        }
+iteration_declaration:
+        WHILE '(' expression ')' statement
+        { $$ = create_node(NODE_ITERATION_DECLARATION, @1.first_line, "while", $3, $5, NULL, NULL); }
         ;
 
-retorno_decl:
+return_declaration:
         RETURN ';'
-        { $$ = create_node(NODE_GENERIC, @1.first_line, "return", NULL, NULL, NULL, NULL); }
-        | RETURN expressao ';'
-        { $$ = create_node(NODE_GENERIC, @1.first_line, "return", $2, NULL, NULL, NULL); }
+        { $$ = create_node(NODE_RETURN_DECLARATION, @1.first_line, "return", NULL, NULL, NULL, NULL); }
+        | RETURN expression ';'
+        { $$ = create_node(NODE_RETURN_DECLARATION, @1.first_line, "return", $2, NULL, NULL, NULL); }
         ;
 
-/*
-Essa gramática está duplicada, me parece que a anterior é "melhor"
-var:
-        ID
-          { $$ = create_node(NODE_ID, @1.first_line, $1, NULL, NULL, NULL, NULL); }
-        | ID '[' expressao ']'
-          {
-            TreeNode *node_id    = create_node(NODE_ID, @1.first_line, $1, NULL, NULL, NULL, NULL);
-            TreeNode *indexNode = create_node(NODE_GENERIC, @3.first_line, "index", $3, NULL, NULL, NULL);
-            $$ = create_node(NODE_GENERIC, @1.first_line, "array_var", node_id, indexNode, NULL, NULL);
-          }
-        ;
-*/
-
-
-simples_expressao:
-        soma_expressao relacional soma_expressao
-          { $$ = create_node(NODE_GENERIC, @1.first_line, "rel_expr", $2, $1, $3, NULL); }
-        | soma_expressao
-          { $$ = $1; }
+simple_expression:
+        sum_expression relational sum_expression
+          { $$ = create_node(NODE_SIMPLE_EXPRESSION, @1.first_line, NULL, $1, $2, $3, NULL); }
+        | sum_expression
+          { $$ = create_node(NODE_SIMPLE_EXPRESSION, @1.first_line, NULL, $1, NULL, NULL, NULL); }
         ;
 
-relacional:
+relational:
         '<'  
-          { $$ = create_node(NODE_GENERIC, @1.first_line, "<",  NULL, NULL, NULL, NULL); }
+          { $$ = create_node(NODE_RELATION_OPERATION, @1.first_line, "<",  NULL, NULL, NULL, NULL); }
         | LE  
-          { $$ = create_node(NODE_GENERIC, @1.first_line, "<=",  NULL, NULL, NULL, NULL); }
+          { $$ = create_node(NODE_RELATION_OPERATION, @1.first_line, "<=",  NULL, NULL, NULL, NULL); }
         | '>'
-          { $$ = create_node(NODE_GENERIC, @1.first_line, ">",  NULL, NULL, NULL, NULL); }
+          { $$ = create_node(NODE_RELATION_OPERATION, @1.first_line, ">",  NULL, NULL, NULL, NULL); }
         | GE
-          { $$ = create_node(NODE_GENERIC, @1.first_line, ">=",  NULL, NULL, NULL, NULL); }
+          { $$ = create_node(NODE_RELATION_OPERATION, @1.first_line, ">=",  NULL, NULL, NULL, NULL); }
         | EQ
-          { $$ = create_node(NODE_GENERIC, @1.first_line, "==",  NULL, NULL, NULL, NULL); }
+          { $$ = create_node(NODE_RELATION_OPERATION, @1.first_line, "==",  NULL, NULL, NULL, NULL); }
         | NE
-          { $$ = create_node(NODE_GENERIC, @1.first_line, "!=",  NULL, NULL, NULL, NULL); }
+          { $$ = create_node(NODE_RELATION_OPERATION, @1.first_line, "!=",  NULL, NULL, NULL, NULL); }
         ;
 
-soma_expressao:
-        soma_expressao soma termo
-          { $$ = create_node(NODE_GENERIC, @2.first_line, "sum", $2, $1, $3, NULL); }
-        | termo
-          { $$ = $1; }
+sum_expression:
+        sum_expression sum term
+          { $$ = create_node(NODE_SUM_EXPRESSION, @1.first_line, NULL, $1, $2, $3, NULL); }
+        | term
+          { $$ = create_node(NODE_SUM_EXPRESSION, @1.first_line, NULL, $1, NULL, NULL, NULL); }
         ;
 
-soma
+sum
     : '+'
-      { $$ = create_node(NODE_GENERIC, @1.first_line, "+", NULL, NULL, NULL, NULL); }
+      { $$ = create_node(NODE_SUM_OPERATION, @1.first_line, "+", NULL, NULL, NULL, NULL); }
     | '-'
-      { $$ = create_node(NODE_GENERIC, @1.first_line, "-", NULL, NULL, NULL, NULL); }
+      { $$ = create_node(NODE_SUM_OPERATION, @1.first_line, "-", NULL, NULL, NULL, NULL); }
     ;
 
-termo:
-        termo mult fator
-          { $$ = create_node(NODE_GENERIC, @2.first_line, "mul", $2, $1, $3, NULL); }
-        | fator
-          { $$ = $1; }
+term:
+        term multiplication factor
+          { $$ = create_node(NODE_TERM, @1.first_line, NULL, $1, $2, $3, NULL); }
+        | factor
+          { $$ = create_node(NODE_TERM, @1.first_line, NULL, $1, NULL, NULL, NULL); }
         ;
 
-mult
+multiplication
     : '*'
-      { $$ = create_node(NODE_GENERIC, @1.first_line, "*", NULL, NULL, NULL, NULL); }
+      { $$ = create_node(NODE_MULTIPLICATION_OPERATION, @1.first_line, "*", NULL, NULL, NULL, NULL); }
     | '/'
-      { $$ = create_node(NODE_GENERIC, @1.first_line, "/", NULL, NULL, NULL, NULL); }
+      { $$ = create_node(NODE_MULTIPLICATION_OPERATION, @1.first_line, "/", NULL, NULL, NULL, NULL); }
     ;
 
-fator:
-        '(' expressao ')'
-          { $$ = $2; }
+factor:
+        '(' expression ')'
+          { $$ = create_node(NODE_FACTOR, @1.first_line, NULL, $2, NULL, NULL, NULL); }
         | var
-          { $$ = $1; }
-        | ativacao
-          { $$ = $1;}
+          { $$ = create_node(NODE_FACTOR, @1.first_line, NULL, $1, NULL, NULL, NULL); }
+        | call
+          { $$ = create_node(NODE_FACTOR, @1.first_line, NULL, $1, NULL, NULL, NULL); }
         | NUM
           { 
-            char buf[32];
-            sprintf(buf, "%d", $1);
-            $$ = create_node(NODE_NUM, @1.first_line, buf, NULL, NULL, NULL, NULL);
+            char buffer[32];
+            sprintf(buffer, "%d", $1);
+            TreeNode *node_num = create_node(NODE_NUM, @1.first_line, buffer, NULL, NULL, NULL, NULL);
+
+            $$ = create_node(NODE_FACTOR, @1.first_line, NULL, node_num, NULL, NULL, NULL);
           }
         ;
 
-ativacao:
-        ID '(' args ')'
+call:
+        ID '(' arguments ')'
           {
             TreeNode *node_id = create_node(NODE_ID, @1.first_line, $1, NULL, NULL, NULL, NULL);
-            $$ = create_node(NODE_GENERIC, @3.first_line, "call", node_id, $3, NULL, NULL );
+            $$ = create_node(NODE_CALL, @3.first_line, NULL, node_id, $3, NULL, NULL );
           }
         ;
 
-args:
-        arg_lista
-        {
-          $$ = $1;
-        }
-        |
-        {
-          $$ = NULL;
-        }
+arguments:
+        argument_list
+        { $$ = create_node(NODE_ARGUMENTS, @1.first_line, NULL, $1, NULL, NULL, NULL ); }
+        | /* empty */
+        { $$ = NULL; }
         ;
 
-arg_lista:
-        arg_lista ',' expressao
-        {
-          append_sibling_node($1, $3);
-        }
-        | expressao
-        { $$ = $1; }
+argument_list:
+        argument_list ',' expression
+        { $$ = create_node(NODE_ARGUMENT_LIST, @1.first_line, NULL, $1, $3, NULL, NULL ); }
+        | expression
+        { $$ = create_node(NODE_ARGUMENT_LIST, @1.first_line, NULL, $1, NULL, NULL, NULL ); }
         ;
-
 %%
 
-TreeNode *parse_syntax_tree(void) {
-    if (yyparse() == 0)
+TreeNode *parse_syntax_tree(const char *filename) {
+    FILE *file = fopen(filename, "r");
+
+    if (!file) {
+        fprintf(stderr, "ERRO ARQUIVO: não foi possível abrir o arquivo '%s'\n", filename);
+        return NULL;
+    }
+
+    yyin = file;
+
+    if (yyparse() == 0) {
+        fclose(file);
+
         return syntax_tree_root;
+    }
+
+    fclose(file);
 
     return NULL;
 }

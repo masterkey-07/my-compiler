@@ -3,35 +3,40 @@
 
 typedef enum
 {
-    NODE_PROGRAM,
-    NODE_DECL_LIST,
-    NODE_VAR_DECL,
-    NODE_FUN_DECL,
-    NODE_TYPE,
+    NODE_ARGUMENTS,
+    NODE_ARGUMENT_LIST,
+    NODE_ASSIGN,
+    NODE_CALL,
+    NODE_COMPOUND_DECLARATION,
+    NODE_DECLARATION_LIST,
+    NODE_DECLARATION,
+    NODE_EMPTY_ARRAY,
+    NODE_EXPRESSION_STATEMENT,
+    NODE_EXPRESSION,
+    NODE_FACTOR,
+    NODE_FUN_DECLARATION,
+    NODE_ID,
+    NODE_ITERATION_DECLARATION,
+    NODE_LOCAL_DECLARATIONS,
+    NODE_MULTIPLICATION_OPERATION,
+    NODE_NUM,
     NODE_PARAM_LIST,
     NODE_PARAM,
-    NODE_COMPOUND,
-    NODE_LOCAL_DECLS,
-    NODE_STMT_LIST,
-    NODE_EXPR_STMT,
-    NODE_SELECTION,
-    NODE_ITERATION,
-    NODE_RETURN,
-    NODE_EXPR,
-    NODE_VAR,
-    NODE_SIMPLE_EXPR,
-    NODE_REL_OP,
-    NODE_SUM_EXPR,
-    NODE_SUM_OP,
+    NODE_PARAMS,
+    NODE_PROGRAM,
+    NODE_RELATION_OPERATION,
+    NODE_RETURN_DECLARATION,
+    NODE_SELECTION_DECLARATION,
+    NODE_SIMPLE_EXPRESSION,
+    NODE_STATEMENT_LIST,
+    NODE_STATEMENT,
+    NODE_SUM_EXPRESSION,
+    NODE_SUM_OPERATION,
     NODE_TERM,
-    NODE_MUL_OP,
-    NODE_FACTOR,
-    NODE_CALL,
-    NODE_ARG_LIST,
-    NODE_CONST,
-    NODE_GENERIC,
-    NODE_NUM,
-    NODE_ID
+    NODE_TYPE,
+    NODE_VAR_DECLARATION,
+    NODE_VAR,
+    NODE_VOID,
 } NodeType;
 
 typedef struct TreeNode
@@ -43,11 +48,9 @@ typedef struct TreeNode
     struct TreeNode *child[4];
 } TreeNode;
 
-TreeNode *parse_syntax_tree(void);
+TreeNode *parse_syntax_tree(const char *filename);
 
-TreeNode *create_node(NodeType type, int line, const char *text, TreeNode *first_child, TreeNode *second__child, TreeNode *third_child, TreeNode *fourth_child);
-
-TreeNode *append_sibling_node(TreeNode *first_node, TreeNode *second_node);
+TreeNode *create_node(NodeType type, int line, const char *text, TreeNode *first_child, TreeNode *second_child, TreeNode *third_child, TreeNode *fourth_child);
 
 void print_symbol_tree(TreeNode *tree, int indent);
 #endif
