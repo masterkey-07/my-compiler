@@ -42,6 +42,7 @@ typedef enum
 typedef struct TreeNode
 {
     int line;
+    int column;
     char *text;
     NodeType type;
     struct TreeNode *sibling;
@@ -50,7 +51,7 @@ typedef struct TreeNode
 
 TreeNode *parse_syntax_tree(const char *filename);
 
-TreeNode *create_node(NodeType type, int line, const char *text, TreeNode *first_child, TreeNode *second_child, TreeNode *third_child, TreeNode *fourth_child);
+TreeNode *create_node(NodeType type, int line, int column, const char *text, TreeNode *first_child, TreeNode *second_child, TreeNode *third_child, TreeNode *fourth_child);
 
 void print_symbol_tree(TreeNode *tree, int indent);
 #endif
