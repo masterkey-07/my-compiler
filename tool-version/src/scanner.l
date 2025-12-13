@@ -17,7 +17,8 @@
 %}
 
 %option yylineno
-
+%option noinput
+%option nounput
 
 %%
 
