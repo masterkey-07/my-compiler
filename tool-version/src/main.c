@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    TreeNode *tree = parse_syntax_tree(argv[1]);
+    SymbolNode *tree = parse_syntax_tree(argv[1]);
 
     if (tree == NULL)
     {

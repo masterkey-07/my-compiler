@@ -39,19 +39,19 @@ typedef enum
     NODE_VOID,
 } NodeType;
 
-typedef struct TreeNode
+typedef struct SymbolNode
 {
     int line;
     int column;
     char *text;
     NodeType type;
-    struct TreeNode *sibling;
-    struct TreeNode *child[4];
-} TreeNode;
+    struct SymbolNode *sibling;
+    struct SymbolNode *child[4];
+} SymbolNode;
 
-TreeNode *parse_syntax_tree(const char *filename);
+SymbolNode *parse_syntax_tree(const char *filename);
 
-TreeNode *create_node(NodeType type, int line, int column, const char *text, TreeNode *first_child, TreeNode *second_child, TreeNode *third_child, TreeNode *fourth_child);
+SymbolNode *create_node(NodeType type, int line, int column, const char *text, SymbolNode *first_child, SymbolNode *second_child, SymbolNode *third_child, SymbolNode *fourth_child);
 
-void print_symbol_tree(TreeNode *tree, int indent);
+void print_symbol_tree(SymbolNode *tree, int indent);
 #endif

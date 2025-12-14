@@ -19,13 +19,13 @@ void yyerror() {
   fprintf(stderr, "ERRO SINTÁTICO: \"%s\" LINHA: %d\n", yytext, yylineno);
 }
 
-TreeNode *syntax_tree_root = NULL;
+SymbolNode *syntax_tree_root = NULL;
 %}
 
 %union {
     int      ival;    /* para NUM */
     char    *sval;    /* para ID */
-    TreeNode *node;   /* para nós da AST */
+    SymbolNode *node;   /* para nós da AST */
 }
 
 %locations
@@ -81,7 +81,7 @@ declaration
 var_declaration
   : specifier_type ID ';'
     {
-        TreeNode *node_id = create_node(NODE_ID, @2.first_line, @2.first_column, $2, NULL, NULL, NULL, NULL);
+        SymbolNode *node_id = create_node(NODE_ID, @2.first_line, @2.first_column, $2, NULL, NULL, NULL, NULL);
         
         $$ = create_node(NODE_VAR_DECLARATION, @2.first_line, @2.first_column, NULL, $1, node_id, NULL, NULL);
     }
@@ -91,9 +91,9 @@ var_declaration
      
         sprintf(buffer, "%d", $4);
      
-        TreeNode *node_id = create_node(NODE_ID, @2.first_line, @2.first_column, $2, NULL, NULL, NULL, NULL);
+        SymbolNode *node_id = create_node(NODE_ID, @2.first_line, @2.first_column, $2, NULL, NULL, NULL, NULL);
      
-        TreeNode *node_size = create_node(NODE_NUM, @4.first_line, @4.first_column, buffer, NULL, NULL, NULL, NULL);
+        SymbolNode *node_size = create_node(NODE_NUM, @4.first_line, @4.first_column, buffer, NULL, NULL, NULL, NULL);
      
         $$ = create_node(NODE_VAR_DECLARATION, @1.first_line, @1.first_column, NULL, $1, node_id, node_size, NULL);
     }
@@ -114,7 +114,7 @@ non_void_type
 function_declaration
   : specifier_type ID '(' params ')' compound_declaration
     { 
-      TreeNode *node_id = create_node(NODE_ID, @2.first_line, @2.first_column, $2, NULL, NULL, NULL, NULL);
+      SymbolNode *node_id = create_node(NODE_ID, @2.first_line, @2.first_column, $2, NULL, NULL, NULL, NULL);
     
       $$ = create_node(NODE_FUN_DECLARATION, @1.first_line, @1.first_column, NULL, $1, node_id, $4, $6); 
     }
@@ -137,15 +137,15 @@ param_list
 param
   : non_void_type ID
     {
-        TreeNode *node_id = create_node(NODE_ID, @2.first_line, @2.first_column, $2, NULL, NULL, NULL, NULL);
+        SymbolNode *node_id = create_node(NODE_ID, @2.first_line, @2.first_column, $2, NULL, NULL, NULL, NULL);
 
         $$ = create_node(NODE_PARAM, @1.first_line, @1.first_column, NULL, $1, node_id, NULL, NULL);
     }
   | non_void_type ID '[' ']'
     {
-        TreeNode *node_id = create_node(NODE_ID, @2.first_line, @2.first_column, $2, NULL, NULL, NULL, NULL);
+        SymbolNode *node_id = create_node(NODE_ID, @2.first_line, @2.first_column, $2, NULL, NULL, NULL, NULL);
         
-        TreeNode *empty_array = create_node(NODE_EMPTY_ARRAY, @3.first_line, @3.first_column, NULL, NULL, NULL, NULL, NULL);
+        SymbolNode *empty_array = create_node(NODE_EMPTY_ARRAY, @3.first_line, @3.first_column, NULL, NULL, NULL, NULL, NULL);
         
         $$ = create_node(NODE_PARAM, @2.first_line, @2.first_column, NULL, $1, node_id, empty_array, NULL);
     }
@@ -193,7 +193,7 @@ expression_declaration
 expression
   : var '=' expression
     { 
-      TreeNode *node_assign = create_node(NODE_ASSIGN, @2.first_line, @2.first_column, "=", NULL, NULL, NULL, NULL);
+      SymbolNode *node_assign = create_node(NODE_ASSIGN, @2.first_line, @2.first_column, "=", NULL, NULL, NULL, NULL);
       
       $$ = create_node(NODE_EXPRESSION, @1.first_line, @1.first_column, NULL, $1, node_assign, $3, NULL); 
     }
@@ -204,13 +204,13 @@ expression
 var
   : ID
     {
-        TreeNode *node_id = create_node(NODE_ID, @1.first_line, @1.first_column, $1, NULL, NULL, NULL, NULL);
+        SymbolNode *node_id = create_node(NODE_ID, @1.first_line, @1.first_column, $1, NULL, NULL, NULL, NULL);
         
         $$ = create_node(NODE_VAR, @1.first_line, @1.first_column, NULL, node_id, NULL, NULL, NULL);
     }
   | ID '[' expression ']'
     {
-        TreeNode *node_id = create_node(NODE_ID, @1.first_line, @1.first_column, $1, NULL, NULL, NULL, NULL);
+        SymbolNode *node_id = create_node(NODE_ID, @1.first_line, @1.first_column, $1, NULL, NULL, NULL, NULL);
         
         $$ = create_node(NODE_VAR, @1.first_line, @1.first_column, NULL, node_id, $3, NULL, NULL);
     }
@@ -296,7 +296,7 @@ factor:
           { 
             char buffer[32];
             sprintf(buffer, "%d", $1);
-            TreeNode *node_num = create_node(NODE_NUM, @1.first_line, @1.first_column, buffer, NULL, NULL, NULL, NULL);
+            SymbolNode *node_num = create_node(NODE_NUM, @1.first_line, @1.first_column, buffer, NULL, NULL, NULL, NULL);
 
             $$ = create_node(NODE_FACTOR, @1.first_line, @1.first_column, NULL, node_num, NULL, NULL, NULL);
           }
@@ -305,7 +305,7 @@ factor:
 call:
         ID '(' arguments ')'
           {
-            TreeNode *node_id = create_node(NODE_ID, @1.first_line, @1.first_column, $1, NULL, NULL, NULL, NULL);
+            SymbolNode *node_id = create_node(NODE_ID, @1.first_line, @1.first_column, $1, NULL, NULL, NULL, NULL);
             $$ = create_node(NODE_CALL, @3.first_line, @3.first_column, NULL, node_id, $3, NULL, NULL );
           }
         ;
@@ -325,7 +325,7 @@ argument_list:
         ;
 %%
 
-TreeNode *parse_syntax_tree(const char *filename) {
+SymbolNode *parse_syntax_tree(const char *filename) {
     FILE *file = fopen(filename, "r");
 
     if (!file) {

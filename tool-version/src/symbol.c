@@ -21,9 +21,9 @@ static char *safe_strcpy(const char *string)
     return copy_string;
 }
 
-TreeNode *create_node(NodeType type, int line, int column, const char *text, TreeNode *first_child, TreeNode *second_child, TreeNode *third_node, TreeNode *fourth_node)
+SymbolNode *create_node(NodeType type, int line, int column, const char *text, SymbolNode *first_child, SymbolNode *second_child, SymbolNode *third_node, SymbolNode *fourth_node)
 {
-    TreeNode *node = (TreeNode *)malloc(sizeof(TreeNode));
+    SymbolNode *node = (SymbolNode *)malloc(sizeof(SymbolNode));
 
     if (!node)
     {
@@ -120,7 +120,7 @@ static const char *get_type_label(NodeType node)
     }
 }
 
-void print_symbol_tree(TreeNode *tree, int level)
+void print_symbol_tree(SymbolNode *tree, int level)
 {
     while (tree)
     {
