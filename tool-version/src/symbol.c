@@ -120,12 +120,12 @@ static const char *get_type_label(NodeType node)
     }
 }
 
-void print_symbol_tree(TreeNode *tree, int indent)
+void print_symbol_tree(TreeNode *tree, int level)
 {
     while (tree)
     {
-        for (int i = 0; i < indent; ++i)
-            printf("  ");
+        for (int i = 0; i < level; ++i)
+            printf("\t");
 
         printf("%s [%d:%d]", get_type_label(tree->type), tree->line, tree->column);
 
@@ -135,10 +135,8 @@ void print_symbol_tree(TreeNode *tree, int indent)
         printf("\n");
 
         for (int i = 0; i < 4; ++i)
-        {
             if (tree->child[i])
-                print_symbol_tree(tree->child[i], indent + 1);
-        }
+                print_symbol_tree(tree->child[i], level + 1);
 
         tree = tree->sibling;
     }

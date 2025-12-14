@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    print_symbol_tree(tree, 4);
+    print_symbol_tree(tree, 0);
 
     return 0;
 }
