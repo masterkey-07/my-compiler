@@ -140,14 +140,14 @@ void print_symbol_table(SymbolTable *table, FILE *out)
     if (!table || !out)
         return;
 
-    for (int i = 0; i < TABLE_SIZE; i++)
+    for (int index = 0; index < TABLE_SIZE; index++)
     {
-        SymbolNode *symbol = table->buckets[i];
+        SymbolNode *symbol = table->buckets[index];
 
         if (!symbol)
             continue;
 
-        fprintf(out, "[%03d]:\n", i);
+        fprintf(out, "[%03d]:\n", index);
 
         while (symbol)
         {
@@ -172,7 +172,7 @@ void print_symbol_tree(SymbolNode *tree, FILE *out, int level)
 {
     while (tree)
     {
-        for (int i = 0; i < level; ++i)
+        for (int index = 0; index < level; ++index)
             fprintf(out, "\t");
 
         fprintf(out, "%s [%d:%d]", get_type_label(tree->type), tree->line, tree->column);
@@ -182,9 +182,9 @@ void print_symbol_tree(SymbolNode *tree, FILE *out, int level)
 
         fprintf(out, "\n");
 
-        for (int i = 0; i < 4; ++i)
-            if (tree->children[i])
-                print_symbol_tree(tree->children[i], out, level + 1);
+        for (int index = 0; index < 4; ++index)
+            if (tree->children[index])
+                print_symbol_tree(tree->children[index], out, level + 1);
 
         tree = tree->sibling;
     }
@@ -195,46 +195,46 @@ void map_tree_scope(SymbolNode *tree, int scope)
     if (tree->scope == -1)
         tree->scope = scope;
 
-    for (int i = 0; i < 4; i++)
-        if (tree->children[i])
-            map_tree_scope(tree->children[i], scope);
+    for (int index = 0; index < 4; index++)
+        if (tree->children[index])
+            map_tree_scope(tree->children[index], scope);
 }
 
 void map_tree_function(SymbolNode *tree, char *function)
 {
     tree->function = function;
 
-    for (int i = 0; i < 4; i++)
-        if (tree->children[i])
-            map_tree_function(tree->children[i], function);
+    for (int index = 0; index < 4; index++)
+        if (tree->children[index])
+            map_tree_function(tree->children[index], function);
 }
 
 SymbolTable *create_symbol_table(void)
 {
     SymbolTable *table = malloc(sizeof(SymbolTable));
 
-    for (int i = 0; i < TABLE_SIZE; i++)
-        table->buckets[i] = NULL;
+    for (int index = 0; index < TABLE_SIZE; index++)
+        table->buckets[index] = NULL;
 
     return table;
 }
 
 static unsigned long symbol_hash(SymbolNode *symbol)
 {
-    unsigned long h = 5381;
-    unsigned char c;
+    unsigned long hash = 5381;
+    unsigned char character;
 
     int scope = symbol->scope;
     const char *text = symbol->text;
 
-    while ((c = *text++))
-        h = ((h << 5) + h) + c;
+    while ((character = *text++))
+        hash = ((hash << 5) + hash) + character;
 
-    h = ((h << 5) + h) + 0x3A;
+    hash = ((hash << 5) + hash) + ':';
 
-    h = ((h << 5) + h) + (unsigned long)scope;
+    hash = ((hash << 5) + hash) + (symbol->type == NODE_ID ? (unsigned long)scope : (unsigned long)0);
 
-    return h % TABLE_SIZE;
+    return hash % TABLE_SIZE;
 }
 
 void *lookup_symbol(SymbolTable *table, SymbolNode *symbol)
@@ -245,7 +245,7 @@ void *lookup_symbol(SymbolTable *table, SymbolNode *symbol)
 
     while (reference)
     {
-        if (strcmp(reference->text, symbol->text) == 0 && reference->scope == symbol->scope)
+        if (strcmp(reference->text, symbol->text) == 0 && (symbol->type == NODE_NUM || reference->scope == symbol->scope))
             return reference;
 
         reference = reference->next;
@@ -259,9 +259,9 @@ void free_symbol_node(SymbolNode *node)
     if (!node)
         return;
 
-    for (int i = 0; i < 4; i++)
-        if (node->children[i])
-            free_symbol_node(node->children[i]);
+    for (int index = 0; index < 4; index++)
+        if (node->children[index])
+            free_symbol_node(node->children[index]);
 
     if (node->sibling)
         free_symbol_node(node->sibling);
@@ -321,9 +321,9 @@ void map_symbol_tree(SymbolTable *table, SymbolNode *tree)
     if ((tree->type == NODE_ID && (tree->meta & IS_DECLARATION) == IS_DECLARATION) || tree->type == NODE_NUM)
         insert_symbol(table, tree);
 
-    for (int i = 0; i < 4; i++)
-        if (tree->children[i])
-            map_symbol_tree(table, tree->children[i]);
+    for (int index = 0; index < 4; index++)
+        if (tree->children[index])
+            map_symbol_tree(table, tree->children[index]);
 }
 
 SymbolTable *build_symbol_table(SymbolNode *tree)
@@ -337,9 +337,9 @@ SymbolTable *build_symbol_table(SymbolNode *tree)
 
 void free_symbol_table(SymbolTable *table)
 {
-    for (int i = 0; i < TABLE_SIZE; i++)
+    for (int index = 0; index < TABLE_SIZE; index++)
     {
-        SymbolNode *node = table->buckets[i];
+        SymbolNode *node = table->buckets[index];
 
         while (node)
         {
@@ -361,7 +361,7 @@ int insert_symbol(SymbolTable *table, SymbolNode *symbol)
 
     while (reference)
     {
-        if (strcmp(reference->text, symbol->text) == 0 && reference->scope == symbol->scope)
+        if (strcmp(reference->text, symbol->text) == 0 && (symbol->type == NODE_NUM || reference->scope == symbol->scope))
             return -1;
 
         reference = reference->next;
