@@ -152,7 +152,7 @@ void print_symbol_table(SymbolTable *table, FILE *out)
         while (symbol)
         {
             fprintf(out,
-                    "\tname: %s\n\t\tline: %d\n\t\tcolumn: %d\n\t\ttype: %s\n\t\tscope: %d\n\t\tfunction: %d\n\t\tfunction_name: %s\n\t\tarray: %d\n\t\tnumber: %d\n",
+                    "\tname: %s\n\t\tline: %d\n\t\tcolumn: %d\n\t\ttype: %s\n\t\tscope: %d\n\t\tis_function: %d\n\t\tfunction_name: %s\n\t\tis_array: %d\n\t\tis_number: %d\n",
                     symbol->text,
                     symbol->line,
                     symbol->column,
