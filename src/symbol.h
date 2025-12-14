@@ -58,6 +58,7 @@ typedef struct SymbolNode
     NodeType type;
     char *function;
     struct SymbolNode *next;
+    struct SymbolNode *father;
     struct SymbolNode *sibling;
     struct SymbolNode *children[4];
 } SymbolNode;

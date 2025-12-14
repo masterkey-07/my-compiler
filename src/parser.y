@@ -122,6 +122,8 @@ function_declaration
     
       SymbolNode *function_node = create_node(NODE_FUN_DECLARATION, @1.first_line, @1.first_column, NULL, $1, node_id, $4, $6); 
 
+      node_id->scope = 0;
+
       map_tree_scope(function_node, ++scope);
       map_tree_function(function_node, node_id->text);
 

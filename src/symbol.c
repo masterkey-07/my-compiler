@@ -47,6 +47,18 @@ SymbolNode *create_node(NodeType type, int line, int column, const char *text, S
 
     node->text = text ? safe_strcpy(text) : NULL;
 
+    if (first_child != NULL)
+        first_child->father = node;
+
+    if (second_child != NULL)
+        second_child->father = node;
+
+    if (third_node != NULL)
+        third_node->father = node;
+
+    if (fourth_node != NULL)
+        fourth_node->father = node;
+
     node->children[0] = first_child;
     node->children[1] = second_child;
     node->children[2] = third_node;

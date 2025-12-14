@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "symbol.h"
+#include "semantic.h"
 
 int main(int argc, char *argv[])
 {
@@ -26,6 +27,8 @@ int main(int argc, char *argv[])
     print_symbol_tree(tree, tree_file, 0);
 
     print_symbol_table(table, table_file);
+
+    analyze_semantic(tree, table);
 
     return 0;
 }
