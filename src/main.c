@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "symbol.h"
 
 int main(int argc, char *argv[])
@@ -11,13 +12,20 @@ int main(int argc, char *argv[])
 
     SymbolNode *tree = parse_syntax_tree(argv[1]);
 
+    FILE *tree_file = fopen("symbol_tree.txt", "w+");
+    FILE *table_file = fopen("symbol_table.txt", "w+");
+
     if (tree == NULL)
     {
         fprintf(stderr, "ERRO: Falha ao fazer parsing do arquivo\n");
         return 1;
     }
 
-    print_symbol_tree(tree, 0);
+    SymbolTable *table = build_symbol_table(tree);
+
+    print_symbol_tree(tree, tree_file, 0);
+
+    print_symbol_table(table, table_file);
 
     return 0;
 }

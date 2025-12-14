@@ -56,3 +56,9 @@ dkms.conf
 dist
 
 settings.json
+
+build
+
+bin
+
+*.txt

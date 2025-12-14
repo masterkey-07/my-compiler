@@ -19,6 +19,8 @@ void yyerror() {
   fprintf(stderr, "ERRO SINTÁTICO: \"%s\" LINHA: %d\n", yytext, yylineno);
 }
 
+int scope = 0;
+
 SymbolNode *syntax_tree_root = NULL;
 %}
 
@@ -61,6 +63,8 @@ program
     {
         $$ = create_node(NODE_PROGRAM, @1.first_line, @1.first_column, "program", $1, NULL, NULL, NULL);
         syntax_tree_root = $$;
+
+        map_tree_scope(syntax_tree_root, 0);
     }
   ;
 
@@ -81,7 +85,7 @@ declaration
 var_declaration
   : specifier_type ID ';'
     {
-        SymbolNode *node_id = create_node(NODE_ID, @2.first_line, @2.first_column, $2, NULL, NULL, NULL, NULL);
+        SymbolNode *node_id = create_node_id(@2.first_line, @2.first_column, $2, IS_DECLARATION);
         
         $$ = create_node(NODE_VAR_DECLARATION, @2.first_line, @2.first_column, NULL, $1, node_id, NULL, NULL);
     }
@@ -91,7 +95,7 @@ var_declaration
      
         sprintf(buffer, "%d", $4);
      
-        SymbolNode *node_id = create_node(NODE_ID, @2.first_line, @2.first_column, $2, NULL, NULL, NULL, NULL);
+        SymbolNode *node_id = create_node_id(@2.first_line, @2.first_column, $2, IS_DECLARATION | IS_ARRAY);
      
         SymbolNode *node_size = create_node(NODE_NUM, @4.first_line, @4.first_column, buffer, NULL, NULL, NULL, NULL);
      
@@ -114,9 +118,14 @@ non_void_type
 function_declaration
   : specifier_type ID '(' params ')' compound_declaration
     { 
-      SymbolNode *node_id = create_node(NODE_ID, @2.first_line, @2.first_column, $2, NULL, NULL, NULL, NULL);
+      SymbolNode *node_id = create_node_id(@2.first_line, @2.first_column, $2, IS_FUNCTION | IS_DECLARATION);
     
-      $$ = create_node(NODE_FUN_DECLARATION, @1.first_line, @1.first_column, NULL, $1, node_id, $4, $6); 
+      SymbolNode *function_node = create_node(NODE_FUN_DECLARATION, @1.first_line, @1.first_column, NULL, $1, node_id, $4, $6); 
+
+      map_tree_scope(function_node, ++scope);
+      map_tree_function(function_node, node_id->text);
+
+      $$ = function_node;
     }
   ;
 
@@ -137,13 +146,13 @@ param_list
 param
   : non_void_type ID
     {
-        SymbolNode *node_id = create_node(NODE_ID, @2.first_line, @2.first_column, $2, NULL, NULL, NULL, NULL);
+        SymbolNode *node_id = create_node_id(@2.first_line, @2.first_column, $2, IS_DECLARATION);
 
         $$ = create_node(NODE_PARAM, @1.first_line, @1.first_column, NULL, $1, node_id, NULL, NULL);
     }
   | non_void_type ID '[' ']'
     {
-        SymbolNode *node_id = create_node(NODE_ID, @2.first_line, @2.first_column, $2, NULL, NULL, NULL, NULL);
+        SymbolNode *node_id = create_node_id(@2.first_line, @2.first_column, $2, IS_ARRAY | IS_DECLARATION);
         
         SymbolNode *empty_array = create_node(NODE_EMPTY_ARRAY, @3.first_line, @3.first_column, NULL, NULL, NULL, NULL, NULL);
         
@@ -174,7 +183,13 @@ statement
   : expression_declaration       
     { $$ = create_node(NODE_STATEMENT, @1.first_line, @1.first_column, NULL, $1, NULL, NULL, NULL); }
   | compound_declaration         
-    { $$ = create_node(NODE_STATEMENT, @1.first_line, @1.first_column, NULL, $1, NULL, NULL, NULL); }
+    { 
+      SymbolNode *block = $1;
+
+      map_tree_scope(block, ++scope);
+
+      $$ = create_node(NODE_STATEMENT, @1.first_line, @1.first_column, NULL, block, NULL, NULL, NULL); 
+    }
   | selection_declaration        
     { $$ = create_node(NODE_STATEMENT, @1.first_line, @1.first_column, NULL, $1, NULL, NULL, NULL); }
   | iteration_declaration        
@@ -204,13 +219,13 @@ expression
 var
   : ID
     {
-        SymbolNode *node_id = create_node(NODE_ID, @1.first_line, @1.first_column, $1, NULL, NULL, NULL, NULL);
+        SymbolNode *node_id = create_node_id(@1.first_line, @1.first_column, $1, IS_NORMAL);
         
         $$ = create_node(NODE_VAR, @1.first_line, @1.first_column, NULL, node_id, NULL, NULL, NULL);
     }
   | ID '[' expression ']'
     {
-        SymbolNode *node_id = create_node(NODE_ID, @1.first_line, @1.first_column, $1, NULL, NULL, NULL, NULL);
+        SymbolNode *node_id = create_node_id(@1.first_line, @1.first_column, $1, IS_ARRAY);
         
         $$ = create_node(NODE_VAR, @1.first_line, @1.first_column, NULL, node_id, $3, NULL, NULL);
     }
@@ -305,7 +320,8 @@ factor:
 call:
         ID '(' arguments ')'
           {
-            SymbolNode *node_id = create_node(NODE_ID, @1.first_line, @1.first_column, $1, NULL, NULL, NULL, NULL);
+            SymbolNode *node_id = create_node_id(@1.first_line, @1.first_column, $1, IS_FUNCTION);
+
             $$ = create_node(NODE_CALL, @3.first_line, @3.first_column, NULL, node_id, $3, NULL, NULL );
           }
         ;
