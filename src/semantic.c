@@ -66,10 +66,6 @@ void verify_var_declaration(SymbolNode *tree, SymbolTable *table, ScopeStack *st
     }
 }
 
-void verify_expression(SymbolNode *tree, SymbolTable *table, ScopeStack *stack)
-{
-}
-
 void analyze_semantic(SymbolNode *tree, SymbolTable *table, ScopeStack *stack)
 {
     if (tree == NULL)
@@ -88,11 +84,6 @@ void analyze_semantic(SymbolNode *tree, SymbolTable *table, ScopeStack *stack)
 
     if (tree->type == NODE_ID && (tree->meta & IS_DECLARATION) != IS_DECLARATION)
         verify_var_declaration(tree, table, stack);
-    else if (tree->type == NODE_EXPRESSION)
-        verify_expression(tree, table, stack);
-    else if (tree->type == NODE_CALL)
-    {
-    }
 
     scope_stack_pop(stack);
 }
