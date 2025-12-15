@@ -120,14 +120,18 @@ function_declaration
     { 
       SymbolNode *node_id = create_node_id(@2.first_line, @2.first_column, $2, IS_FUNCTION | IS_DECLARATION);
     
-      SymbolNode *function_node = create_node(NODE_FUN_DECLARATION, @1.first_line, @1.first_column, NULL, $1, node_id, $4, $6); 
+      SymbolNode *node_type = $1;
+      SymbolNode *node_params = $4;
+      SymbolNode *node_compound = $6;
+      
+      SymbolNode *function_node = create_node(NODE_FUN_DECLARATION, @1.first_line, @1.first_column, NULL, node_type, node_id, node_params, node_compound);
 
-      node_id->scope = 0;
-
+      map_tree_scope(node_id, 0);
+      map_tree_scope(node_type, 0);
       map_tree_scope(function_node, ++scope);
       map_tree_function(function_node, node_id->text);
 
-      $$ = function_node;
+      $$ = function_node; 
     }
   ;
 
@@ -324,7 +328,7 @@ call:
           {
             SymbolNode *node_id = create_node_id(@1.first_line, @1.first_column, $1, IS_FUNCTION);
 
-            $$ = create_node(NODE_CALL, @3.first_line, @3.first_column, NULL, node_id, $3, NULL, NULL );
+            $$ = create_node(NODE_CALL, @3.first_line, @3.first_column, NULL, node_id, $3, NULL, NULL);
           }
         ;
 

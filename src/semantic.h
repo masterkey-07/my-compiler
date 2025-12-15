@@ -3,6 +3,6 @@
 
 #include "symbol.h"
 
-void analyze_semantic(SymbolNode *tree, SymbolTable *table);
+void analyze_semantic(SymbolNode *tree, SymbolTable *table, ScopeStack *stack);
 
 #endif

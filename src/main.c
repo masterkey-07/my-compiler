@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
 
     print_symbol_table(table, table_file);
 
-    analyze_semantic(tree, table);
+    analyze_semantic(tree, table, NULL);
 
     return 0;
 }

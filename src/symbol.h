@@ -7,6 +7,7 @@
 
 #define IS_ARRAY 0b010
 #define IS_NORMAL 0b000
+#define IS_UNKNOWN 0b111
 #define IS_FUNCTION 0b100
 #define IS_DECLARATION 0b001
 
@@ -58,7 +59,7 @@ typedef struct SymbolNode
     NodeType type;
     char *function;
     struct SymbolNode *next;
-    struct SymbolNode *father;
+    struct SymbolNode *parent;
     struct SymbolNode *sibling;
     struct SymbolNode *children[4];
 } SymbolNode;
@@ -66,7 +67,7 @@ typedef struct SymbolNode
 typedef struct ScopeStack
 {
     int scope;
-    struct ScopeStack *past;
+    struct ScopeStack *parent;
 } ScopeStack;
 
 typedef struct SymbolTable
@@ -92,13 +93,13 @@ SymbolTable *create_symbol_table(void);
 
 int insert_symbol(SymbolTable *table, SymbolNode *node);
 
-void *lookup_symbol(SymbolTable *table, SymbolNode *symbol);
+SymbolNode *lookup_symbol(SymbolTable *table, char *symbol, int scope);
 
 void free_symbol_table(SymbolTable *table);
 
 void free_symbol_node(SymbolNode *node);
 
-ScopeStack *scope_stack_push(ScopeStack *next, int scope);
+ScopeStack *scope_stack_push(ScopeStack *past, int scope);
 
 ScopeStack *scope_stack_pop(ScopeStack *stack);
 

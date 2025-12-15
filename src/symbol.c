@@ -48,16 +48,16 @@ SymbolNode *create_node(NodeType type, int line, int column, const char *text, S
     node->text = text ? safe_strcpy(text) : NULL;
 
     if (first_child != NULL)
-        first_child->father = node;
+        first_child->parent = node;
 
     if (second_child != NULL)
-        second_child->father = node;
+        second_child->parent = node;
 
     if (third_node != NULL)
-        third_node->father = node;
+        third_node->parent = node;
 
     if (fourth_node != NULL)
-        fourth_node->father = node;
+        fourth_node->parent = node;
 
     node->children[0] = first_child;
     node->children[1] = second_child;
@@ -231,33 +231,30 @@ SymbolTable *create_symbol_table(void)
     return table;
 }
 
-static unsigned long symbol_hash(SymbolNode *symbol)
+static unsigned long symbol_hash(const char *text, int scope)
 {
     unsigned long hash = 5381;
     unsigned char character;
-
-    int scope = symbol->scope;
-    const char *text = symbol->text;
 
     while ((character = *text++))
         hash = ((hash << 5) + hash) + character;
 
     hash = ((hash << 5) + hash) + ':';
 
-    hash = ((hash << 5) + hash) + (symbol->type == NODE_ID ? (unsigned long)scope : (unsigned long)0);
+    hash = ((hash << 5) + hash) + (unsigned long)scope;
 
     return hash % TABLE_SIZE;
 }
 
-void *lookup_symbol(SymbolTable *table, SymbolNode *symbol)
+SymbolNode *lookup_symbol(SymbolTable *table, char *symbol, int scope)
 {
-    unsigned long index = symbol_hash(symbol);
+    unsigned long index = symbol_hash(symbol, scope);
 
     SymbolNode *reference = table->buckets[index];
 
     while (reference)
     {
-        if (strcmp(reference->text, symbol->text) == 0 && (symbol->type == NODE_NUM || reference->scope == symbol->scope))
+        if (strcmp(reference->text, symbol) == 0 && reference->scope == scope)
             return reference;
 
         reference = reference->next;
@@ -291,7 +288,7 @@ ScopeStack *scope_stack_push(ScopeStack *past, int scope)
     if (!head)
         return past;
 
-    head->past = past;
+    head->parent = past;
     head->scope = scope;
 
     return head;
@@ -302,9 +299,9 @@ ScopeStack *scope_stack_pop(ScopeStack *stack)
     if (!stack)
         return NULL;
 
-    ScopeStack *past = stack->past;
+    ScopeStack *past = stack->parent;
 
-    stack->past = NULL;
+    stack->parent = NULL;
 
     free_context(stack);
 
@@ -316,11 +313,11 @@ void free_context(ScopeStack *stack)
     if (!stack)
         return;
 
-    ScopeStack *reference = stack->past;
+    ScopeStack *reference = stack->parent;
 
     while (reference)
     {
-        ScopeStack *past = reference->past;
+        ScopeStack *past = reference->parent;
         free(reference);
         reference = past;
     }
@@ -367,7 +364,7 @@ void free_symbol_table(SymbolTable *table)
 int insert_symbol(SymbolTable *table, SymbolNode *symbol)
 {
 
-    unsigned long index = symbol_hash(symbol);
+    unsigned long index = symbol_hash(symbol->text, symbol->type == NODE_NUM ? 0 : symbol->scope);
 
     SymbolNode *reference = table->buckets[index];
 
