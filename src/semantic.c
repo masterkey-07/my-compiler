@@ -51,6 +51,7 @@ void verify_var_declaration(SymbolNode *tree, SymbolTable *table, ScopeStack *st
     parent_node = tree->parent;
 
     is_array = ref_node->meta & IS_ARRAY;
+
     is_function = ref_node->meta & IS_FUNCTION;
 
     if (parent_node->type == NODE_CALL && is_function != IS_FUNCTION)
